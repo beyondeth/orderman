@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(flutter:*)",
+      "Bash(adb:*)",
+      "Bash(~/Library/Android/sdk/platform-tools/adb devices)",
+      "Bash(~/Library/Android/sdk/platform-tools/adb logcat -s flutter)",
+      "Bash(~/Library/Android/sdk/platform-tools/adb shell am force-stop com.company.ordermarket)",
+      "Bash(~/Library/Android/sdk/platform-tools/adb shell am start -n com.company.ordermarket/com.company.ordermarket.MainActivity)",
+      "Bash(~/Library/Android/sdk/platform-tools/adb -s emulator-5556 shell am start -n com.company.ordermarket/com.company.ordermarket.MainActivity)",
+      "Bash(~/Library/Android/sdk/platform-tools/adb -s emulator-5558 logcat -d)",
+      "Bash(/Users/sihyungpark/Library/Android/sdk/platform-tools/adb devices)"
+    ],
+    "deny": []
+  }
+}

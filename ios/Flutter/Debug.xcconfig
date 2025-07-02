@@ -1,0 +1,17 @@
+#include? "Pods/Target Support Files/Pods-Runner/Pods-Runner.debug.xcconfig"
+#include "Generated.xcconfig"
+
+// 🚀 디버그 빌드 속도 최적화
+EXCLUDED_ARCHS[sdk=iphonesimulator*] = arm64
+GCC_OPTIMIZATION_LEVEL = 0
+SWIFT_OPTIMIZATION_LEVEL = -Onone
+DEBUG_INFORMATION_FORMAT = dwarf
+COMPILER_INDEX_STORE_ENABLE = NO
+ENABLE_BITCODE = NO
+
+// 🔥 Firestore 특화 최적화
+GCC_PREPROCESSOR_DEFINITIONS = $(inherited) GRPC_ARES=0
+SWIFT_COMPILATION_MODE = singlefile
+
+// 병렬 빌드 최적화
+SWIFT_WHOLE_MODULE_OPTIMIZATION = NO

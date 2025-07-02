@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "486521508162",
+    "project_id": "order-market-app",
+    "storage_bucket": "order-market-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:486521508162:android:602bb63397cc90b28a38db",
+        "android_client_info": {
+          "package_name": "com.company.ordermarket"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "486521508162-1bcrgi3gg67ksmms1ob6430oaptpg2hf.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDXeYdzJbILRBrxAlgp_kkGF5RDfZeb-lk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "486521508162-1bcrgi3gg67ksmms1ob6430oaptpg2hf.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "486521508162-dk6fl36gehkba8gepdnpbakl28uadeec.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.company.ordermarket"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

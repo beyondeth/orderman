@@ -1,0 +1,67 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // 사용자 문서 규칙
+    match /users/{userId} {
+      // 사용자는 자신의 문서만 읽기/쓰기 가능
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      
+      // 다른 사용자는 기본 정보만 읽기 가능 (연결 시 필요)
+      allow read: if request.auth != null && 
+                     resource.data.keys().hasAny(['displayName', 'email', 'role']);
+    }
+    
+    // 연결 문서 규칙 (구매자-판매자 연결)
+    match /connections/{connectionId} {
+      // 연결 당사자만 읽기 가능
+      allow read: if request.auth != null && 
+                     (request.auth.uid == resource.data.buyerId || 
+                      request.auth.uid == resource.data.sellerId);
+      
+      // 구매자만 연결 요청 생성 가능
+      allow create: if request.auth != null && 
+                       request.auth.uid == request.resource.data.buyerId &&
+                       request.resource.data.status == 'pending';
+      
+      // 판매자만 연결 승인/거절 가능
+      allow update: if request.auth != null && 
+                       request.auth.uid == resource.data.sellerId &&
+                       request.resource.data.status in ['approved', 'rejected'];
+    }
+    
+    // 상품 문서 규칙
+    match /products/{productId} {
+      // 모든 인증된 사용자가 상품 읽기 가능
+      allow read: if request.auth != null;
+      
+      // 판매자만 자신의 상품 생성/수정/삭제 가능
+      allow create, update, delete: if request.auth != null && 
+                                       request.auth.uid == request.resource.data.sellerId;
+    }
+    
+    // 주문 문서 규칙
+    match /orders/{orderId} {
+      // 주문 당사자만 읽기 가능
+      allow read: if request.auth != null && 
+                     (request.auth.uid == resource.data.buyerId || 
+                      request.auth.uid == resource.data.sellerId);
+      
+      // 구매자만 주문 생성 가능
+      allow create: if request.auth != null && 
+                       request.auth.uid == request.resource.data.buyerId;
+      
+      // 판매자만 주문 상태 업데이트 가능 (승인/거절/완료)
+      allow update: if request.auth != null && 
+                       request.auth.uid == resource.data.sellerId &&
+                       request.resource.data.diff(resource.data).affectedKeys()
+                         .hasOnly(['status', 'updatedAt']);
+    }
+    
+    // 개발/테스트용 임시 규칙 (필요시 주석 해제)
+    match /{document=**} {
+      allow read, write: if request.time < timestamp.date(2025, 2, 28);
+    }
+  }
+}
