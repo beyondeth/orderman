@@ -14,21 +14,28 @@ class OrderTabView extends GetView<BuyerHomeController> {
   Widget build(BuildContext context) {
     return RefreshIndicator(
       onRefresh: controller.refreshConnections,
-      child: SingleChildScrollView(
+      child: CustomScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(AppConstants.defaultPadding),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 안내 메시지
-            _buildInfoSection(context),
+        slivers: [
+          SliverPadding(
+            padding: const EdgeInsets.all(AppConstants.defaultPadding),
+            sliver: SliverToBoxAdapter(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // 안내 메시지
+                  _buildInfoSection(context),
 
-            const SizedBox(height: AppConstants.largePadding),
+                  const SizedBox(height: AppConstants.largePadding),
 
-            // 연결된 판매자 목록
-            _buildConnectedSellers(context),
-          ],
-        ),
+                  // 연결된 판매자 목록
+                  _buildConnectedSellers(context),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

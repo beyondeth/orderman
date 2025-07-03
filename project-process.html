@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Market App - 프로젝트 구조 분석</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #34495e;
+            margin-top: 40px;
+            border-left: 4px solid #3498db;
+            padding-left: 15px;
+        }
+        h3 {
+            color: #7f8c8d;
+        }
+        .mermaid {
+            text-align: center;
+            margin: 20px 0;
+            background: #fff;
+            border: 1px solid #e1e8ed;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .feature-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+        }
+        .tech-stack {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .highlight {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Order Market App - 프로젝트 구조 및 기능 흐름 분석</h1>
+        
+        <div class="highlight">
+            <strong>📋 프로젝트 개요:</strong> Flutter + Firebase 기반의 B2B 주문 관리 앱으로, 구매자(Buyer)와 판매자(Seller) 간의 주문 프로세스를 관리합니다.
+        </div>
+
+        <h2>🏗️ 전체 아키텍처</h2>
+        <div class="mermaid">
+graph TB
+    subgraph "Frontend - Flutter App"
+        A[main.dart] --> B[GetX App]
+        B --> C[Routes & Pages]
+        C --> D[Views]
+        D --> E[Controllers]
+        E --> F[Services]
+        F --> G[Models]
+    end
+    
+    subgraph "Backend - Firebase"
+        H[Firebase Auth]
+        I[Cloud Firestore]
+        J[Firebase Storage]
+    end
+    
+    F --> H
+    F --> I
+    F --> J
+    
+    subgraph "State Management"
+        K[GetX Controllers]
+        L[Global State]
+        M[Cache Manager]
+    end
+    
+    E --> K
+    K --> L
+    L --> M
+        </div>
+
+        <h2>🔄 사용자 인증 흐름</h2>
+        <div class="mermaid">
+sequenceDiagram
+    participant U as User
+    participant S as SplashController
+    participant A as AuthService
+    participant F as Firebase Auth
+    participant D as Firestore
+    
+    U->>S: 앱 시작
+    S->>A: 인증 상태 확인
+    A->>F: authStateChanges()
+    
+    alt 로그인된 사용자
+        F->>A: User 객체 반환
+        A->>D: 사용자 데이터 조회
+        D->>A: UserModel 반환
+        A->>S: 인증 완료
+        S->>U: 메인 화면으로 이동
+    else 미로그인 사용자
+        F->>A: null 반환
+        A->>S: 미인증 상태
+        S->>U: 로그인 화면으로 이동
+    end
+        </div>
+
+        <h2>👥 사용자 역할별 기능 구조</h2>
+        <div class="mermaid">
+graph LR
+    subgraph "공통 기능"
+        A1[회원가입/로그인]
+        A2[프로필 관리]
+        A3[설정]
+    end
+    
+    subgraph "구매자(Buyer) 기능"
+        B1[판매자 연결 요청]
+        B2[상품 목록 조회]
+        B3[주문 생성]
+        B4[주문 내역 조회]
+        B5[주문 상태 확인]
+    end
+    
+    subgraph "판매자(Seller) 기능"
+        C1[연결 요청 관리]
+        C2[상품 관리]
+        C3[주문 접수/처리]
+        C4[주문 상태 업데이트]
+        C5[구매자 관리]
+    end
+    
+    A1 --> B1
+    A1 --> C1
+    B1 --> B2
+    B2 --> B3
+    C1 --> C2
+    C2 --> C3
+        </div>
+
+        <h2>📱 화면 네비게이션 구조</h2>
+        <div class="mermaid">
+graph TD
+    A[Splash Screen] --> B{인증 상태}
+    B -->|미인증| C[Login Screen]
+    B -->|인증됨| D[Main Screen]
+    
+    C --> E[Register Screen]
+    E --> F[Role Selection]
+    F --> G[Profile Setup]
+    G --> D
+    
+    D --> H{사용자 역할}
+    H -->|Buyer| I[Buyer Home]
+    H -->|Seller| J[Seller Home]
+    
+    I --> K[Order Tab]
+    I --> L[History Tab]
+    I --> M[Profile Tab]
+    
+    J --> N[Products Tab]
+    J --> O[Orders Tab]
+    J --> P[Connections Tab]
+    
+    K --> Q[Order Creation]
+    N --> R[Product Management]
+    O --> S[Order Processing]
+        </div>
+
+        <h2>🔧 서비스 계층 구조</h2>
+        <div class="mermaid">
+graph TB
+    subgraph "Core Services"
+        A[AuthService]
+        B[FirebaseService]
+        C[ProductService]
+        D[OrderService]
+        E[ConnectionService]
+        F[EnvService]
+    end
+    
+    subgraph "State Management"
+        G[GlobalStateController]
+        H[CacheManager]
+        I[AppState]
+    end
+    
+    subgraph "Controllers"
+        J[AuthControllers]
+        K[BuyerControllers]
+        L[SellerControllers]
+        M[CommonControllers]
+    end
+    
+    A --> G
+    B --> A
+    C --> B
+    D --> B
+    E --> B
+    F --> B
+    
+    G --> H
+    G --> I
+    
+    J --> A
+    K --> C
+    K --> D
+    K --> E
+    L --> C
+    L --> D
+    L --> E
+    M --> A
+        </div>
+
+        <h2>📊 데이터 모델 관계</h2>
+        <div class="mermaid">
+erDiagram
+    UserModel {
+        string uid PK
+        string email
+        string displayName
+        UserRole role
+        string phoneNumber
+        string businessName
+        string address
+        DateTime createdAt
+    }
+    
+    ProductModel {
+        string id PK
+        string sellerId FK
+        string name
+        string unit
+        int price
+        bool isActive
+        int orderIndex
+        DateTime createdAt
+    }
+    
+    OrderModel {
+        string id PK
+        string buyerId FK
+        string sellerId FK
+        string buyerName
+        string sellerName
+        OrderStatus status
+        DateTime orderDate
+        int totalAmount
+        string notes
+    }
+    
+    OrderItemModel {
+        string productId FK
+        string productName
+        string unit
+        int quantity
+        int unitPrice
+        int totalPrice
+    }
+    
+    ConnectionModel {
+        string id PK
+        string buyerId FK
+        string sellerId FK
+        ConnectionStatus status
+        DateTime createdAt
+    }
+    
+    UserModel ||--o{ ProductModel : "판매자가 상품 소유"
+    UserModel ||--o{ OrderModel : "구매자가 주문 생성"
+    UserModel ||--o{ OrderModel : "판매자가 주문 처리"
+    OrderModel ||--o{ OrderItemModel : "주문이 주문항목 포함"
+    ProductModel ||--o{ OrderItemModel : "상품이 주문항목에 포함"
+    UserModel ||--o{ ConnectionModel : "구매자-판매자 연결"
+        </div>
+
+        <h2>🔄 주문 프로세스 흐름</h2>
+        <div class="mermaid">
+sequenceDiagram
+    participant B as Buyer
+    participant BC as BuyerController
+    participant OS as OrderService
+    participant FS as Firestore
+    participant SC as SellerController
+    participant S as Seller
+    
+    B->>BC: 주문 생성 요청
+    BC->>OS: createOrder()
+    OS->>FS: 주문 데이터 저장
+    FS-->>OS: 저장 완료
+    OS-->>BC: 주문 생성 완료
+    BC-->>B: 주문 완료 알림
+    
+    Note over FS: 실시간 리스너 활성화
+    
+    FS->>SC: 새 주문 알림
+    SC->>S: 주문 접수 알림
+    S->>SC: 주문 상태 변경
+    SC->>OS: updateOrderStatus()
+    OS->>FS: 상태 업데이트
+    FS->>BC: 상태 변경 알림
+    BC->>B: 주문 상태 업데이트
+        </div>
+
+        <div class="tech-stack">
+            <h2>🚀 기술 스택</h2>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h3>Frontend</h3>
+                    <ul>
+                        <li>Flutter SDK</li>
+                        <li>GetX (상태관리)</li>
+                        <li>Material Design</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <h3>Backend</h3>
+                    <ul>
+                        <li>Firebase Auth</li>
+                        <li>Cloud Firestore</li>
+                        <li>Firebase Storage</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <h3>Architecture</h3>
+                    <ul>
+                        <li>Clean Architecture</li>
+                        <li>MVVM Pattern</li>
+                        <li>Dependency Injection</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <h2>🎯 핵심 특징</h2>
+        <div class="feature-grid">
+            <div class="feature-card">
+                <h3>🔄 반응형 상태 관리</h3>
+                <p>GetX를 활용한 실시간 UI 업데이트</p>
+            </div>
+            <div class="feature-card">
+                <h3>🔥 실시간 동기화</h3>
+                <p>Firebase 리스너를 통한 실시간 데이터 동기화</p>
+            </div>
+            <div class="feature-card">
+                <h3>👥 역할 기반 접근</h3>
+                <p>구매자/판매자 권한별 기능 분리</p>
+            </div>
+            <div class="feature-card">
+                <h3>🚀 성능 최적화</h3>
+                <p>캐싱 및 메모리 관리 전략</p>
+            </div>
+            <div class="feature-card">
+                <h3>🔐 보안</h3>
+                <p>Firebase Security Rules 적용</p>
+            </div>
+            <div class="feature-card">
+                <h3>📱 반응형 디자인</h3>
+                <p>다양한 화면 크기 지원</p>
+            </div>
+        </div>
+
+        <div class="highlight">
+            <h3>🔧 개발 환경 설정</h3>
+            <ul>
+                <li><strong>Flutter SDK:</strong> 최신 안정 버전</li>
+                <li><strong>Firebase Project:</strong> 인증, Firestore, Storage 활성화</li>
+                <li><strong>GetX:</strong> 상태 관리 및 라우팅</li>
+                <li><strong>Environment Variables:</strong> .env 파일을 통한 설정 관리</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'default',
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true,
+                curve: 'basis'
+            },
+            sequence: {
+                diagramMarginX: 50,
+                diagramMarginY: 10,
+                actorMargin: 50,
+                width: 150,
+                height: 65,
+                boxMargin: 10,
+                boxTextMargin: 5,
+                noteMargin: 10,
+                messageMargin: 35
+            }
+        });
+    </script>
+</body>
+</html>

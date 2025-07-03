@@ -18,6 +18,7 @@ class BuyerHomeController extends GetxController {
   final RxList<OrderModel> recentOrders = <OrderModel>[].obs;
   final RxBool isLoading = false.obs;
   final RxBool isLoadingOrders = false.obs;
+  final RxBool isLoadingConnections = false.obs;
 
   // Services
   AuthService get _authService => Get.find<AuthService>();
@@ -27,26 +28,56 @@ class BuyerHomeController extends GetxController {
 
   // Getters
   UserModel? get currentUser {
-    if (Get.isRegistered<AuthService>()) {
-      final user = Get.find<AuthService>().userModel;
-      print('=== BuyerHomeController - Current User: ${user?.displayName} ===');
-      print('=== BuyerHomeController - User Role: ${user?.role} ===');
-      return user;
+    try {
+      if (Get.isRegistered<AuthService>()) {
+        final authService = Get.find<AuthService>();
+        final user = authService.userModel;
+        print('=== BuyerHomeController - Current User: ${user?.displayName} ===');
+        print('=== BuyerHomeController - User Role: ${user?.role} ===');
+        return user;
+      }
+    } catch (e) {
+      print('=== BuyerHomeController - Error getting user: $e ===');
     }
     print('=== BuyerHomeController - AuthService not registered ===');
     return null;
   }
 
   String get userName {
-    final name = currentUser?.displayName ?? '구매자';
-    print('=== BuyerHomeController - User Name: $name ===');
-    return name;
+    try {
+      final name = currentUser?.displayName ?? '구매자';
+      print('=== BuyerHomeController - User Name: $name ===');
+      return name;
+    } catch (e) {
+      print('=== BuyerHomeController - Error getting userName: $e ===');
+      return '구매자';
+    }
   }
 
   String get businessName {
-    final business = currentUser?.businessName ?? '';
-    print('=== BuyerHomeController - Business Name: $business ===');
-    return business;
+    try {
+      final business = currentUser?.businessName ?? '';
+      print('=== BuyerHomeController - Business Name: $business ===');
+      return business;
+    } catch (e) {
+      print('=== BuyerHomeController - Error getting businessName: $e ===');
+      return '';
+    }
+  }
+
+  // 연결된 판매자 목록 (connections를 기반으로 변환)
+  List<Map<String, dynamic>> get connectedSellers {
+    return connections
+        .map(
+          (connection) => {
+            'id': connection.sellerId,
+            'businessName': connection.sellerName,
+            'email': connection.sellerEmail ?? '',
+            'lastOrderDate': connection.updatedAt,
+            'status': connection.status,
+          },
+        )
+        .toList();
   }
 
   // 인사말 메시지
@@ -85,7 +116,7 @@ class BuyerHomeController extends GetxController {
     print('=== 🔍 User email: ${currentUser.email} ===');
     print('=== 🔍 User role: ${currentUser.role} ===');
 
-    isLoading.value = true;
+    isLoadingConnections.value = true;
 
     try {
       // 모든 연결 상태 확인 (디버깅용)
@@ -111,9 +142,11 @@ class BuyerHomeController extends GetxController {
                 print('  - Seller Name: ${conn.sellerName}');
                 print('  - Status: ${conn.status}');
                 print('  - Requested At: ${conn.requestedAt}');
-                
+
                 // 판매자 상품 미리 로드
-                print('=== 🔗 Preloading products for seller: ${conn.sellerName} (${conn.sellerId}) ===');
+                print(
+                  '=== 🔗 Preloading products for seller: ${conn.sellerName} (${conn.sellerId}) ===',
+                );
                 _loadSellerProducts(conn.sellerId);
               }
             },
@@ -124,7 +157,7 @@ class BuyerHomeController extends GetxController {
     } catch (e) {
       print('=== ❌ Failed to load connections: $e ===');
     } finally {
-      isLoading.value = false;
+      isLoadingConnections.value = false;
     }
   }
 
@@ -216,7 +249,8 @@ class BuyerHomeController extends GetxController {
   final RxSet<String> expandedSellers = <String>{}.obs;
   final RxMap<String, bool> selectedProducts = <String, bool>{}.obs;
   final RxMap<String, int> productQuantities = <String, int>{}.obs;
-  final RxMap<String, List<ProductModel>> sellerProductsMap = <String, List<ProductModel>>{}.obs;
+  final RxMap<String, List<ProductModel>> sellerProductsMap =
+      <String, List<ProductModel>>{}.obs;
 
   // 판매자 확장/축소 토글
   void toggleSellerExpansion(String sellerId) {
@@ -233,24 +267,30 @@ class BuyerHomeController extends GetxController {
   void _loadSellerProducts(String sellerId) {
     try {
       print('=== 🔍 Loading products for seller: $sellerId ===');
-      
+
       // 기존 ProductService의 getSellerProducts 사용
-      _productService.getSellerProducts(sellerId).listen(
-        (products) {
-          print('=== 📦 Loaded ${products.length} products for seller: $sellerId ===');
-          for (var product in products) {
-            print('=== Product: ${product.name} - ${product.price}원 (Active: ${product.isActive}) ===');
-          }
-          sellerProductsMap[sellerId] = products;
-          
-          // UI 업데이트를 위해 강제로 갱신
-          sellerProductsMap.refresh();
-        },
-        onError: (error) {
-          print('=== ❌ Failed to load seller products: $error ===');
-          sellerProductsMap[sellerId] = [];
-        },
-      );
+      _productService
+          .getSellerProducts(sellerId)
+          .listen(
+            (products) {
+              print(
+                '=== 📦 Loaded ${products.length} products for seller: $sellerId ===',
+              );
+              for (var product in products) {
+                print(
+                  '=== Product: ${product.name} - ${product.price}원 (Active: ${product.isActive}) ===',
+                );
+              }
+              sellerProductsMap[sellerId] = products;
+
+              // UI 업데이트를 위해 강제로 갱신
+              sellerProductsMap.refresh();
+            },
+            onError: (error) {
+              print('=== ❌ Failed to load seller products: $error ===');
+              sellerProductsMap[sellerId] = [];
+            },
+          );
     } catch (e) {
       print('=== ❌ Exception in _loadSellerProducts: $e ===');
       sellerProductsMap[sellerId] = [];
@@ -260,7 +300,9 @@ class BuyerHomeController extends GetxController {
   // 판매자 상품 가져오기
   List<ProductModel> getSellerProducts(String sellerId) {
     final products = sellerProductsMap[sellerId] ?? [];
-    print('=== 🔍 getSellerProducts called for seller: $sellerId, found ${products.length} products ===');
+    print(
+      '=== 🔍 getSellerProducts called for seller: $sellerId, found ${products.length} products ===',
+    );
     return products;
   }
 
@@ -314,12 +356,15 @@ class BuyerHomeController extends GetxController {
   // 선택된 상품으로 주문 생성
   Future<void> createOrderFromSelection(ConnectionModel connection) async {
     try {
-      print('=== 🛒 Starting order creation for seller: ${connection.sellerName} ===');
-      
-      final selectedProductIds = selectedProducts.entries
-          .where((entry) => entry.value)
-          .map((entry) => entry.key)
-          .toList();
+      print(
+        '=== 🛒 Starting order creation for seller: ${connection.sellerName} ===',
+      );
+
+      final selectedProductIds =
+          selectedProducts.entries
+              .where((entry) => entry.value)
+              .map((entry) => entry.key)
+              .toList();
 
       print('=== 📋 Selected product IDs: $selectedProductIds ===');
 
@@ -331,16 +376,16 @@ class BuyerHomeController extends GetxController {
 
       final sellerProducts = getSellerProducts(connection.sellerId);
       print('=== 📦 Available seller products: ${sellerProducts.length} ===');
-      
+
       if (sellerProducts.isEmpty) {
         print('=== ❌ No seller products found ===');
         Get.snackbar('오류', '판매자의 상품을 찾을 수 없습니다.');
         return;
       }
-      
+
       // 주문 생성 로직 - 실제 상품 정보 사용
       final orderItems = <Map<String, dynamic>>[];
-      
+
       for (var productId in selectedProductIds) {
         try {
           final quantity = productQuantities[productId] ?? 1;
@@ -348,9 +393,11 @@ class BuyerHomeController extends GetxController {
             (p) => p.id == productId,
             orElse: () => throw Exception('Product not found: $productId'),
           );
-          
-          print('=== 📝 Processing product: ${product.name}, quantity: $quantity, price: ${product.price} ===');
-          
+
+          print(
+            '=== 📝 Processing product: ${product.name}, quantity: $quantity, price: ${product.price} ===',
+          );
+
           final orderItem = {
             'productId': productId,
             'productName': product.name,
@@ -359,10 +406,9 @@ class BuyerHomeController extends GetxController {
             'unitPrice': product.price ?? 0, // 가격 미설정도 허용
             'totalPrice': (product.price ?? 0) * quantity,
           };
-          
+
           orderItems.add(orderItem);
           print('=== ✅ Added order item: ${orderItem} ===');
-          
         } catch (e) {
           print('=== ❌ Error processing product $productId: $e ===');
           Get.snackbar('오류', '상품 처리 중 오류가 발생했습니다: $productId');
@@ -374,13 +420,12 @@ class BuyerHomeController extends GetxController {
 
       // 주문 생성 (가격 미설정 상품도 포함)
       await _createOrderWithItems(connection, orderItems);
-      
+
       // 선택 상태 초기화
       selectedProducts.clear();
       productQuantities.clear();
-      
+
       Get.snackbar('성공', '주문이 생성되었습니다.');
-      
     } catch (e, stackTrace) {
       print('=== ❌ Failed to create order: $e ===');
       print('=== ❌ Stack trace: $stackTrace ===');
@@ -395,7 +440,7 @@ class BuyerHomeController extends GetxController {
   ) async {
     try {
       print('=== 🔧 Creating order with items: ${orderItems.length} ===');
-      
+
       final user = currentUser;
       if (user == null) {
         throw Exception('Current user is null');
@@ -404,21 +449,24 @@ class BuyerHomeController extends GetxController {
       print('=== 👤 User: ${user.displayName} (${user.uid}) ===');
 
       // OrderItemModel 리스트 생성
-      final orderItemModels = orderItems.map((item) {
-        final unitPrice = item['unitPrice'] as int? ?? 0;
-        final totalPrice = item['totalPrice'] as int? ?? 0;
-        
-        print('=== 📝 Creating OrderItem: ${item['productName']}, qty: ${item['quantity']}, unit: $unitPrice, total: $totalPrice ===');
-        
-        return OrderItemModel(
-          productId: item['productId'] as String,
-          productName: item['productName'] as String,
-          unit: item['unit'] as String? ?? '',
-          quantity: item['quantity'] as int,
-          unitPrice: unitPrice,
-          totalPrice: totalPrice,
-        );
-      }).toList();
+      final orderItemModels =
+          orderItems.map((item) {
+            final unitPrice = item['unitPrice'] as int? ?? 0;
+            final totalPrice = item['totalPrice'] as int? ?? 0;
+
+            print(
+              '=== 📝 Creating OrderItem: ${item['productName']}, qty: ${item['quantity']}, unit: $unitPrice, total: $totalPrice ===',
+            );
+
+            return OrderItemModel(
+              productId: item['productId'] as String,
+              productName: item['productName'] as String,
+              unit: item['unit'] as String? ?? '',
+              quantity: item['quantity'] as int,
+              unitPrice: unitPrice,
+              totalPrice: totalPrice,
+            );
+          }).toList();
 
       // 총 금액 계산
       final totalAmount = orderItemModels.fold<int>(0, (sum, item) {
@@ -447,7 +495,7 @@ class BuyerHomeController extends GetxController {
 
       // OrderService를 통해 주문 생성
       final success = await _orderService.createOrder(order);
-      
+
       if (success) {
         print('=== ✅ Order created successfully ===');
         // 주문 목록 새로고침
@@ -455,7 +503,6 @@ class BuyerHomeController extends GetxController {
       } else {
         throw Exception('OrderService returned false');
       }
-      
     } catch (e, stackTrace) {
       print('=== ❌ Failed to create order with items: $e ===');
       print('=== ❌ Stack trace: $stackTrace ===');

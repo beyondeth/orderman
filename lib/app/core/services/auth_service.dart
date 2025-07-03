@@ -46,22 +46,55 @@ class AuthService extends GetxService {
 
   // 사용자 데이터 로드 (bamtol 방식)
   Future<void> _loadUserData(String uid) async {
-    try {
-      print('=== Loading user data for uid: $uid ===');
-      
-      final doc = await _firestore.collection('users').doc(uid).get();
-      
-      if (doc.exists && doc.data() != null) {
-        _userModel.value = UserModel.fromFirestore(doc);
-        print('=== User model loaded: ${_userModel.value?.displayName} ===');
-      } else {
-        print('=== User document does not exist ===');
-        _userModel.value = null;
+    const maxRetries = 3;
+    const baseDelay = Duration(seconds: 2);
+    
+    for (int attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        print('=== Loading user data for uid: $uid (시도 $attempt/$maxRetries) ===');
+        
+        final doc = await _firestore.collection('users').doc(uid).get();
+        
+        if (doc.exists && doc.data() != null) {
+          final data = doc.data()!;
+          print('=== Firestore 문서 데이터 ===');
+          print('uid: ${data['uid']}');
+          print('email: ${data['email']}');
+          print('displayName: ${data['displayName']}');
+          print('role: ${data['role']}');
+          print('businessName: ${data['businessName']}');
+          print('phoneNumber: ${data['phoneNumber']}');
+          print('createdAt: ${data['createdAt']}');
+          
+          _userModel.value = UserModel.fromFirestore(doc);
+          print('=== User model loaded: ${_userModel.value?.displayName} (${_userModel.value?.role.name}) ===');
+          return; // 성공시 즉시 반환
+        } else {
+          print('=== User document does not exist for uid: $uid ===');
+          _userModel.value = null;
+          return; // 문서가 없으면 재시도 불필요
+        }
+      } catch (e) {
+        print('=== Failed to load user data (시도 $attempt/$maxRetries): $e ===');
+        
+        if (attempt == maxRetries) {
+          print('=== 모든 재시도 실패 - 사용자 데이터 로드 포기 ===');
+          _userModel.value = null;
+          return;
+        }
+        
+        // 지수 백오프로 대기
+        final delay = Duration(seconds: baseDelay.inSeconds * attempt);
+        print('=== ${delay.inSeconds}초 후 재시도... ===');
+        await Future.delayed(delay);
       }
-    } catch (e) {
-      print('=== Failed to load user data: $e ===');
-      _userModel.value = null;
     }
+  }
+
+  // 임시 사용자 모델 설정 (네트워크 문제 시 사용)
+  void setTempUserModel(UserModel userModel) {
+    _userModel.value = userModel;
+    print('=== 임시 사용자 모델 설정: ${userModel.displayName} (${userModel.role.name}) ===');
   }
 
   // 외부에서 사용자 데이터 로드 (public 메서드)
@@ -178,6 +211,8 @@ class AuthService extends GetxService {
     try {
       _isLoading.value = true;
       print('=== Signing in with email: $email ===');
+      print('=== Firebase Auth instance: ${_auth.app.name} ===');
+      print('=== Firebase Project ID: ${_auth.app.options.projectId} ===');
 
       final credential = await _auth.signInWithEmailAndPassword(
         email: email,
@@ -192,7 +227,13 @@ class AuthService extends GetxService {
 
       return null;
     } on FirebaseAuthException catch (e) {
-      print('=== Firebase Auth Error: ${e.code} - ${e.message} ===');
+      print('=== Firebase Auth Error Details ===');
+      print('Error Code: ${e.code}');
+      print('Error Message: ${e.message}');
+      print('Error Plugin: ${e.plugin}');
+      print('Stack Trace: ${e.stackTrace}');
+      print('================================');
+      
       Get.snackbar(
         '로그인 실패',
         _getFirebaseAuthErrorMessage(e.code),
@@ -200,7 +241,8 @@ class AuthService extends GetxService {
       );
       return null;
     } catch (e) {
-      print('=== Sign in error: $e ===');
+      print('=== General Sign in error: $e ===');
+      print('Error Type: ${e.runtimeType}');
       Get.snackbar(
         '로그인 실패',
         '로그인 중 오류가 발생했습니다.',
@@ -255,7 +297,7 @@ class AuthService extends GetxService {
         return null;
       }
 
-      print('=== Creating user profile for: ${currentUser.uid} ===');
+      print('=== Creating/Updating user profile for: ${currentUser.uid} ===');
 
       final userModel = UserModel(
         uid: currentUser.uid,
@@ -267,7 +309,7 @@ class AuthService extends GetxService {
         createdAt: DateTime.now(),
       );
 
-      // Firestore에 저장 (bamtol 방식: 직접 Map 사용)
+      // Firestore에 저장 (덮어쓰기 허용)
       await _firestore.collection('users').doc(currentUser.uid).set({
         'uid': userModel.uid,
         'email': userModel.email,
@@ -279,7 +321,7 @@ class AuthService extends GetxService {
       });
 
       _userModel.value = userModel;
-      print('=== User profile created successfully ===');
+      print('=== User profile created/updated successfully ===');
       return userModel;
     } catch (e) {
       print('=== Create user profile error: $e ===');

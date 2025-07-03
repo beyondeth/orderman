@@ -12,6 +12,7 @@ import 'app/core/services/connection_service.dart';
 import 'app/core/services/product_service.dart';
 import 'app/core/services/order_service.dart';
 import 'app/core/services/env_service.dart';
+import 'app/core/state/global_state_controller.dart';
 import 'app/presentation/controllers/splash_controller.dart';
 
 void main() async {
@@ -77,7 +78,11 @@ class OrderMarketApp extends StatelessWidget {
         Get.put(OrderService(), permanent: true);
         print('=== ✅ 모든 서비스 등록 완료 ===');
         
-        // 4. SplashController 등록
+        // 4. GlobalStateController 등록 (서비스들 이후에)
+        Get.put(GlobalStateController(), permanent: true);
+        print('=== ✅ GlobalStateController 등록 완료 ===');
+        
+        // 5. SplashController 등록
         Get.put(SplashController(), permanent: true);
         print('=== ✅ SplashController 등록 완료 ===');
       }),

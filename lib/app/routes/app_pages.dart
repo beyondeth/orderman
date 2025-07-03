@@ -16,6 +16,7 @@ import '../presentation/views/seller/seller_orders_view.dart';
 import '../presentation/views/seller/connection_requests_view.dart';
 import '../presentation/views/profile/profile_view.dart';
 import '../presentation/views/main/main_view.dart';
+import '../presentation/views/main/main_view_refactored.dart';
 
 import '../presentation/controllers/splash_controller.dart';
 import '../presentation/controllers/auth/login_controller.dart';
@@ -115,7 +116,7 @@ class AppPages {
     // Main (with persistent bottom navigation)
     GetPage(
       name: AppRoutes.main,
-      page: () => const MainView(),
+      page: () => const MainViewRefactored(),
       binding: BindingsBuilder(() {
         Get.lazyPut<MainController>(() => MainController());
       }),

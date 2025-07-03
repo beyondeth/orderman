@@ -26,9 +26,36 @@ class ProfileSetupController extends GetxController {
     final arguments = Get.arguments as Map<String, dynamic>?;
     selectedRole = arguments?['role'] ?? UserRole.buyer;
 
-    // Pre-fill display name if available
+    // Pre-fill existing data if available
+    _prefillExistingData();
+  }
+
+  void _prefillExistingData() {
+    // Firebase Auth에서 displayName 가져오기
     if (_authService.firebaseUser?.displayName != null) {
       displayNameController.text = _authService.firebaseUser!.displayName!;
+    }
+
+    // 기존 UserModel에서 데이터 가져오기
+    final userModel = _authService.userModel;
+    if (userModel != null) {
+      print('=== 기존 프로필 데이터로 미리 채우기 ===');
+      
+      if (userModel.displayName.isNotEmpty) {
+        displayNameController.text = userModel.displayName;
+      }
+      
+      if (userModel.phoneNumber?.isNotEmpty == true) {
+        phoneNumberController.text = userModel.phoneNumber!;
+      }
+      
+      if (userModel.businessName?.isNotEmpty == true) {
+        businessNameController.text = userModel.businessName!;
+      }
+      
+      print('displayName: ${displayNameController.text}');
+      print('phoneNumber: ${phoneNumberController.text}');
+      print('businessName: ${businessNameController.text}');
     }
   }
 

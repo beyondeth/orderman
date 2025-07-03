@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../../core/constants/app_constants.dart';
+import '../../../core/layout/app_layout.dart';
+import '../../../core/theme/app_spacing.dart';
+import '../../../core/theme/app_typography.dart';
+import '../../../core/widgets/app_components.dart';
 import '../../../core/utils/order_utils.dart';
+import '../../../core/services/auth_service.dart';
 import '../../../data/models/order_model.dart';
+import '../../../data/models/connection_model.dart';
 import '../../controllers/buyer/buyer_home_controller.dart';
 import '../../controllers/main_controller.dart';
 
@@ -12,447 +17,470 @@ class BuyerHomeView extends GetView<BuyerHomeController> {
 
   @override
   Widget build(BuildContext context) {
+    // 컨트롤러가 등록되지 않은 경우 등록
+    if (!Get.isRegistered<BuyerHomeController>()) {
+      Get.put(BuyerHomeController());
+    }
+    
     return RefreshIndicator(
       onRefresh: controller.refreshConnections,
-      child: SingleChildScrollView(
+      child: CustomScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(AppConstants.defaultPadding),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 인사말 및 사용자 정보
-            _buildWelcomeSection(context),
+        slivers: [
+          SliverToBoxAdapter(
+            child: ResponsiveContainer(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min, // 중요: 최소 크기로 제한
+                children: [
+                  // 인사말 및 사용자 정보
+                  _buildWelcomeSection(context).responsiveSection(
+                    margin: EdgeInsets.only(bottom: AppLayout.getSpacing(context)),
+                  ),
 
-            const SizedBox(height: AppConstants.largePadding),
+                  // 최근 주문 내역
+                  _buildRecentOrders(context).responsiveSection(
+                    title: '최근 주문 내역',
+                    showDivider: true,
+                    margin: EdgeInsets.only(bottom: AppLayout.getSpacing(context)),
+                  ),
 
-            // 빠른 액션 버튼들
-            _buildQuickActions(context),
-
-            const SizedBox(height: AppConstants.largePadding),
-
-            // 연결된 판매자 목록
-            _buildConnectedSellers(context),
-          ],
-        ),
+                  // 연결된 판매자 목록
+                  _buildConnectedSellers(context).responsiveSection(
+                    title: '연결된 판매자',
+                    showDivider: true,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildWelcomeSection(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppConstants.defaultPadding),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Theme.of(context).colorScheme.primary,
-            Theme.of(context).colorScheme.primary.withOpacity(0.8),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16),
-      ),
+    return ResponsiveCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            controller.greetingMessage,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Colors.white.withOpacity(0.9),
-            ),
-          ),
-
-          const SizedBox(height: 4),
-
-          Text(
-            '${controller.userName}님',
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-
-          if (controller.businessName.isNotEmpty) ...[
-            const SizedBox(height: 4),
-            Text(
-              controller.businessName,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Colors.white.withOpacity(0.9),
-              ),
-            ),
-          ],
-
-          const SizedBox(height: AppConstants.defaultPadding),
-
-          Row(
-            children: [
-              const Icon(Icons.shopping_cart, color: Colors.white, size: 20),
-              const SizedBox(width: 8),
-              Text(
-                '오늘도 효율적인 주문 관리를 시작해보세요',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Colors.white.withOpacity(0.9),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildQuickActions(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          '최근 주문 내역',
-          style: Theme.of(
-            context,
-          ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-        ),
-
-        const SizedBox(height: AppConstants.defaultPadding),
-
-        _buildRecentOrdersContainer(context),
-      ],
-    );
-  }
-
-  Widget _buildRecentOrdersContainer(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppConstants.defaultPadding),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(20),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // AuthService의 사용자 정보 변경을 감지하여 실시간 업데이트
+                    GetX<AuthService>(
+                      builder: (authService) {
+                        final hour = DateTime.now().hour;
+                        String greeting;
+                        if (hour < 12) {
+                          greeting = '좋은 아침입니다!';
+                        } else if (hour < 18) {
+                          greeting = '좋은 오후입니다!';
+                        } else {
+                          greeting = '좋은 저녁입니다!';
+                        }
+                        
+                        return Text(
+                          greeting,
+                          style: AppTypography.bodyLarge.copyWith(
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
+                        );
+                      },
                     ),
-                    child: Icon(
-                      Icons.receipt_long,
-                      color: Theme.of(context).colorScheme.primary,
-                      size: 20,
+                    AppSpacing.verticalGapXS,
+                    // 사용자 이름도 AuthService에서 직접 가져오기
+                    GetX<AuthService>(
+                      builder: (authService) {
+                        final userName = authService.userModel?.displayName ?? '구매자';
+                        return Text(
+                          '${userName}님',
+                          style: AppTypography.headlineMedium.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
+                        );
+                      },
                     ),
-                  ),
-                  const SizedBox(width: AppConstants.smallPadding),
-                  Text(
-                    '최근 주문',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
+                    // 비즈니스 이름도 마찬가지
+                    GetX<AuthService>(
+                      builder: (authService) {
+                        final businessName = authService.userModel?.businessName ?? '';
+                        if (businessName.isEmpty) return const SizedBox.shrink();
+                        
+                        return Column(
+                          children: [
+                            AppSpacing.verticalGapXS,
+                            Text(
+                              businessName,
+                              style: AppTypography.bodyMedium.copyWith(
+                                color: Theme.of(context).colorScheme.primary,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        );
+                      },
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-              TextButton(
-                onPressed: () {
-                  // MainController를 통해 내역 탭으로 이동
-                  try {
-                    final mainController = Get.find<MainController>();
-                    mainController.changeTab(2); // 내역 탭으로 이동
-                  } catch (e) {
-                    // Fallback
-                    controller.goToOrderHistory();
-                  }
-                },
-                child: const Text('전체보기'),
-              ),
+              if (AppLayout.isTabletOrLarger(context))
+                Container(
+                  padding: AppSpacing.paddingLG,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.primaryContainer,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Icon(
+                    Icons.person_outline,
+                    size: 48,
+                    color: Theme.of(context).colorScheme.onPrimaryContainer,
+                  ),
+                ),
             ],
           ),
-          
-          const SizedBox(height: AppConstants.defaultPadding),
-          
-          // 최근 주문 목록
-          Obx(() {
-            if (controller.isLoadingOrders.value) {
-              return const Center(
-                child: Padding(
-                  padding: EdgeInsets.all(AppConstants.defaultPadding),
-                  child: CircularProgressIndicator(),
-                ),
-              );
-            }
-
-            if (controller.recentOrders.isEmpty) {
-              return _buildEmptyOrdersState(context);
-            }
-
-            return Column(
-              children: [
-                ...controller.recentOrders.asMap().entries.map((entry) {
-                  final index = entry.key;
-                  final order = entry.value;
-                  return Column(
-                    children: [
-                      _buildRecentOrderItem(context, order),
-                      if (index < controller.recentOrders.length - 1)
-                        const Divider(height: AppConstants.defaultPadding),
-                    ],
-                  );
-                }).toList(),
-                
-                const SizedBox(height: AppConstants.smallPadding),
-                
-                Center(
-                  child: TextButton.icon(
-                    onPressed: () {
-                      // MainController를 통해 내역 탭으로 이동
-                      try {
-                        final mainController = Get.find<MainController>();
-                        mainController.changeTab(2); // 내역 탭으로 이동
-                      } catch (e) {
-                        // Fallback
-                        controller.goToOrderHistory();
-                      }
-                    },
-                    icon: const Icon(Icons.history, size: 18),
-                    label: const Text('전체보기'),
-                  ),
-                ),
-              ],
-            );
-          }),
         ],
       ),
     );
   }
 
-  Widget _buildEmptyOrdersState(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(AppConstants.defaultPadding),
+  Widget _buildRecentOrders(BuildContext context) {
+    return Obx(() {
+      try {
+        if (controller.isLoadingOrders.value) {
+          return AppComponents.loadingIndicator(message: '주문 내역을 불러오는 중...');
+        }
+
+        if (controller.recentOrders.isEmpty) {
+          return AppComponents.emptyState(
+            title: '최근 주문이 없습니다',
+            subtitle: '첫 주문을 시작해보세요!',
+            icon: Icons.shopping_bag_outlined,
+            action: AppComponents.primaryButton(
+              text: '주문하기',
+              onPressed: _navigateToOrders,
+              icon: Icons.add_shopping_cart,
+            ),
+          );
+        }
+
+        final displayOrders = controller.recentOrders.take(3).toList();
+        
+        return Column(
+          children: [
+            ...displayOrders.map((order) => _buildOrderCard(context, order)),
+            if (controller.recentOrders.length > 3) ...[
+              AppSpacing.verticalGapMD,
+              AppComponents.textButton(
+                text: '전체보기 (${controller.recentOrders.length}개)',
+                onPressed: _navigateToHistory,
+                icon: Icons.arrow_forward,
+              ),
+            ],
+          ],
+        );
+      } catch (e) {
+        print('_buildRecentOrders 오류: $e');
+        return AppComponents.emptyState(
+          title: '주문 내역을 불러올 수 없습니다',
+          subtitle: '잠시 후 다시 시도해주세요',
+          icon: Icons.error_outline,
+          action: AppComponents.primaryButton(
+            text: '새로고침',
+            onPressed: () => controller.refreshConnections(),
+            icon: Icons.refresh,
+          ),
+        );
+      }
+    });
+  }
+
+  Widget _buildOrderCard(BuildContext context, OrderModel order) {
+    return ResponsiveCard(
+      margin: EdgeInsets.only(bottom: AppSpacing.sm),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            Icons.receipt_long_outlined,
-            size: 48,
-            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
-          ),
-          const SizedBox(height: AppConstants.smallPadding),
-          Text(
-            '아직 주문 내역이 없습니다',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-            ),
-          ),
-          const SizedBox(height: AppConstants.smallPadding),
-          TextButton(
-            onPressed: () {
-              // MainController를 통해 주문 탭으로 이동
-              try {
-                final mainController = Get.find<MainController>();
-                mainController.changeTab(1);
-              } catch (e) {
-                // Fallback
-                print('MainController not found: $e');
-              }
-            },
-            child: const Text('첫 주문하러 가기'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildRecentOrderItem(BuildContext context, order) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  order.sellerName ?? '판매자',
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  '${OrderUtils.formatRelativeDate(order.orderDate)} • ${order.items.length}개 상품',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                OrderUtils.formatAmount(order.totalAmount),
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      '주문 #${order.id.substring(0, 8)}',
+                      style: AppTypography.titleMedium.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    AppSpacing.verticalGapXS,
+                    Text(
+                      OrderUtils.formatDate(order.createdAt),
+                      style: AppTypography.bodySmall.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 2),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                padding: AppSpacing.paddingSM,
                 decoration: BoxDecoration(
-                  color: order.status.color.withOpacity(0.1),
+                  color: OrderUtils.getStatusColor(order.status).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Text(
-                  order.status.displayText,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: order.status.color,
-                    fontWeight: FontWeight.w500,
-                  ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      OrderUtils.getStatusIcon(order.status),
+                      size: 16,
+                      color: OrderUtils.getStatusColor(order.status),
+                    ),
+                    AppSpacing.horizontalGapXS,
+                    Text(
+                      OrderUtils.getStatusText(order.status),
+                      style: AppTypography.bodySmall.copyWith(
+                        color: OrderUtils.getStatusColor(order.status),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
+          AppSpacing.verticalGapSM,
+          Text(
+            '총 ${order.items.length}개 상품',
+            style: AppTypography.bodyMedium,
+          ),
+          if (order.totalAmount > 0) ...[
+            AppSpacing.verticalGapXS,
+            Text(
+              OrderUtils.formatCurrency(order.totalAmount),
+              style: AppTypography.titleMedium.copyWith(
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ),
+          ],
         ],
       ),
     );
   }
 
   Widget _buildConnectedSellers(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              '연결된 판매자',
-              style: Theme.of(
-                context,
-              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+    return Obx(() {
+      try {
+        if (controller.isLoadingConnections.value) {
+          return AppComponents.loadingIndicator(message: '연결된 판매자를 불러오는 중...');
+        }
+
+        if (controller.connections.isEmpty) {
+          return AppComponents.emptyState(
+            title: '연결된 판매자가 없습니다',
+            subtitle: '판매자와 연결하여 주문을 시작하세요',
+            icon: Icons.link_off,
+            action: AppComponents.primaryButton(
+              text: '판매자 연결하기',
+              onPressed: _navigateToConnect,
+              icon: Icons.add_link,
             ),
-
-            TextButton.icon(
-              onPressed: controller.goToSellerConnect,
-              icon: const Icon(Icons.add, size: 18),
-              label: const Text('연결 추가'),
-            ),
-          ],
-        ),
-
-        const SizedBox(height: AppConstants.defaultPadding),
-
-        Obx(() {
-          if (controller.isLoading.value) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          if (controller.connections.isEmpty) {
-            return _buildEmptyState(context);
-          }
-
-          return ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: controller.connections.length,
-            separatorBuilder:
-                (context, index) =>
-                    const SizedBox(height: AppConstants.smallPadding),
-            itemBuilder: (context, index) {
-              final connection = controller.connections[index];
-              return _buildSellerCard(context, connection);
-            },
           );
-        }),
-      ],
-    );
+        }
+
+        return Wrap(
+          spacing: AppSpacing.md,
+          runSpacing: AppSpacing.md,
+          children: controller.connections.map((connection) => 
+            ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: MediaQuery.of(context).size.width > 600 
+                    ? (MediaQuery.of(context).size.width - 48) / 2 
+                    : double.infinity,
+                minHeight: 120,
+              ),
+              child: _buildSellerCard(context, connection),
+            )
+          ).toList(),
+        );
+      } catch (e) {
+        print('_buildConnectedSellers 오류: $e');
+        return AppComponents.emptyState(
+          title: '판매자 목록을 불러올 수 없습니다',
+          subtitle: '잠시 후 다시 시도해주세요',
+          icon: Icons.error_outline,
+          action: AppComponents.primaryButton(
+            text: '새로고침',
+            onPressed: () => controller.refreshConnections(),
+            icon: Icons.refresh,
+          ),
+        );
+      }
+    });
   }
 
-  Widget _buildEmptyState(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppConstants.largePadding),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
-        ),
-      ),
+  Widget _buildSellerCard(BuildContext context, ConnectionModel connection) {
+    return ResponsiveCard(
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            Icons.store_outlined,
-            size: 64,
-            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      connection.sellerName,
+                      style: AppTypography.titleMedium.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    if (connection.sellerEmail != null) ...[
+                      AppSpacing.verticalGapXS,
+                      Text(
+                        connection.sellerEmail!,
+                        style: AppTypography.bodySmall.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              IconButton(
+                onPressed: () => _showSellerActions(context, connection),
+                icon: const Icon(Icons.more_vert),
+                tooltip: '더보기',
+              ),
+            ],
           ),
-
-          const SizedBox(height: AppConstants.defaultPadding),
-
-          Text(
-            '연결된 판매자가 없습니다',
-            style: Theme.of(
-              context,
-            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
-          ),
-
-          const SizedBox(height: AppConstants.smallPadding),
-
-          Text(
-            '판매자와 연결하여 주문을 시작해보세요',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-            ),
-            textAlign: TextAlign.center,
-          ),
-
-          const SizedBox(height: AppConstants.defaultPadding),
-
-          ElevatedButton.icon(
-            onPressed: controller.goToSellerConnect,
-            icon: const Icon(Icons.add),
-            label: const Text('판매자 연결하기'),
+          AppSpacing.verticalGapMD,
+          Row(
+            children: [
+              Expanded(
+                child: AppComponents.primaryButton(
+                  text: '주문하기',
+                  onPressed: () => _orderFromSeller(connection),
+                  icon: Icons.shopping_cart,
+                ),
+              ),
+              AppSpacing.horizontalGapSM,
+              AppComponents.outlinedButton(
+                text: '채팅',
+                onPressed: () => _chatWithSeller(connection),
+                icon: Icons.chat_outlined,
+              ),
+            ],
           ),
         ],
       ),
     );
   }
 
-  Widget _buildSellerCard(BuildContext context, connection) {
-    return Card(
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: Theme.of(context).colorScheme.primary,
-          child: Text(
-            connection.sellerName[0].toUpperCase(),
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
+  // 네비게이션 메서드들
+  void _navigateToOrders() {
+    Get.find<MainController>().changeTabIndex(1);
+  }
+
+  void _navigateToHistory() {
+    Get.find<MainController>().changeTabIndex(2);
+  }
+
+  void _navigateToConnect() {
+    Get.find<MainController>().changeTabIndex(3);
+  }
+
+  void _showSellerActions(BuildContext context, ConnectionModel connection) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => Container(
+        padding: AppSpacing.paddingLG,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.shopping_cart),
+              title: const Text('주문하기'),
+              onTap: () {
+                Navigator.pop(context);
+                _orderFromSeller(connection);
+              },
             ),
+            ListTile(
+              leading: const Icon(Icons.chat),
+              title: const Text('채팅하기'),
+              onTap: () {
+                Navigator.pop(context);
+                _chatWithSeller(connection);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.info_outline),
+              title: const Text('판매자 정보'),
+              onTap: () {
+                Navigator.pop(context);
+                _showSellerInfo(connection);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _orderFromSeller(ConnectionModel connection) {
+    // 해당 판매자로부터 주문하기
+    Get.find<MainController>().setActiveConnection(connection);
+    _navigateToOrders();
+  }
+
+  void _chatWithSeller(ConnectionModel connection) {
+    // 판매자와 채팅하기
+    Get.snackbar('채팅', '${connection.sellerName}과의 채팅 기능은 준비 중입니다.');
+  }
+
+  void _showSellerInfo(ConnectionModel connection) {
+    // 판매자 정보 보기
+    Get.dialog(
+      AlertDialog(
+        title: Text(connection.sellerName),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (connection.sellerEmail != null)
+              Text('이메일: ${connection.sellerEmail}'),
+            AppSpacing.verticalGapSM,
+            Text('연결일: ${OrderUtils.formatDate(connection.requestedAt)}'),
+            AppSpacing.verticalGapSM,
+            Text('상태: ${connection.status}'),
+          ],
+        ),
+        actions: [
+          AppComponents.textButton(
+            text: '닫기',
+            onPressed: () => Get.back(),
           ),
-        ),
-        title: Text(
-          connection.sellerName,
-          style: const TextStyle(fontWeight: FontWeight.w600),
-        ),
-        subtitle:
-            connection.sellerBusinessName != null
-                ? Text(connection.sellerBusinessName!)
-                : null,
-        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-        onTap: () => controller.goToOrderCreate(connection),
+        ],
       ),
     );
   }

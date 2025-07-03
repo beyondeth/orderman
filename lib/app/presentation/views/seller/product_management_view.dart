@@ -22,6 +22,7 @@ class ProductManagementView extends GetView<ProductManagementController> {
                 '상품 관리',
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.bold,
+                  color: Get.theme.colorScheme.onSurface, // 명시적으로 검은색 설정
                 ),
               ),
               ElevatedButton.icon(
@@ -140,14 +141,14 @@ class ProductManagementView extends GetView<ProductManagementController> {
               Text(
                 '등록된 상품이 없습니다',
                 style: Get.textTheme.titleMedium?.copyWith(
-                  color: Get.theme.colorScheme.onSurface.withOpacity(0.6),
+                  color: Get.theme.colorScheme.onSurface.withOpacity(0.8), // 더 진하게
                 ),
               ),
               const SizedBox(height: AppConstants.smallPadding),
               Text(
                 '+ 버튼을 눌러 첫 상품을 등록해보세요.',
                 style: Get.textTheme.bodyMedium?.copyWith(
-                  color: Get.theme.colorScheme.onSurface.withOpacity(0.5),
+                  color: Get.theme.colorScheme.onSurface.withOpacity(0.6), // 더 진하게
                 ),
               ),
             ],
@@ -178,7 +179,9 @@ class ProductManagementView extends GetView<ProductManagementController> {
               : Get.theme.colorScheme.outline,
           child: Icon(
             product.isActive ? Icons.check : Icons.pause,
-            color: Colors.white,
+            color: product.isActive 
+                ? Colors.white  // 활성 상품은 흰색 (primary 배경에서 잘 보임)
+                : Colors.black, // 비활성 상품은 검은색 (outline 배경에서 잘 보임)
           ),
         ),
         title: Text(
@@ -186,7 +189,7 @@ class ProductManagementView extends GetView<ProductManagementController> {
           style: TextStyle(
             fontWeight: FontWeight.bold,
             color: product.isActive 
-                ? null 
+                ? Get.theme.colorScheme.onSurface  // 검은색 텍스트
                 : Get.theme.colorScheme.onSurface.withOpacity(0.5),
           ),
         ),
@@ -223,7 +226,7 @@ class ProductManagementView extends GetView<ProductManagementController> {
                   style: Get.textTheme.titleSmall?.copyWith(
                     color: product.price != null 
                         ? Get.theme.colorScheme.primary
-                        : Get.theme.colorScheme.outline,
+                        : Get.theme.colorScheme.onSurface.withOpacity(0.7), // 더 진한 회색
                     fontWeight: FontWeight.bold,
                   ),
                 ),

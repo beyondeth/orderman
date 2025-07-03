@@ -69,6 +69,7 @@ class SellerHomeView extends GetView<SellerHomeController> {
                   '안녕하세요!',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
+                    color: Get.theme.colorScheme.onSurface, // 검은색 명시
                   ),
                 ),
               ],
@@ -78,7 +79,9 @@ class SellerHomeView extends GetView<SellerHomeController> {
               '오늘도 신선한 식자재로 고객들에게 만족을 드려보세요.',
               style: Theme.of(
                 context,
-              ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
+              ).textTheme.bodyMedium?.copyWith(
+                color: Get.theme.colorScheme.onSurface.withOpacity(0.7), // 더 진한 회색
+              ),
             ),
           ],
         ),
@@ -101,6 +104,7 @@ class SellerHomeView extends GetView<SellerHomeController> {
                   '오늘의 주문',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
+                    color: Get.theme.colorScheme.onSurface, // 검은색 명시
                   ),
                 ),
               ],
@@ -153,7 +157,9 @@ class SellerHomeView extends GetView<SellerHomeController> {
               '오늘 들어온 주문이 없습니다',
               style: Theme.of(
                 context,
-              ).textTheme.titleMedium?.copyWith(color: Colors.grey[600]),
+              ).textTheme.titleMedium?.copyWith(
+                color: Get.theme.colorScheme.onSurface.withOpacity(0.8), // 더 진한 회색
+              ),
             ),
             const SizedBox(height: 8),
             Text(
@@ -161,7 +167,9 @@ class SellerHomeView extends GetView<SellerHomeController> {
               textAlign: TextAlign.center,
               style: Theme.of(
                 context,
-              ).textTheme.bodyMedium?.copyWith(color: Colors.grey[500]),
+              ).textTheme.bodyMedium?.copyWith(
+                color: Get.theme.colorScheme.onSurface.withOpacity(0.6), // 더 진한 회색
+              ),
             ),
           ],
         ),
@@ -183,18 +191,27 @@ class SellerHomeView extends GetView<SellerHomeController> {
         ),
         title: Text(
           order.buyerName ?? '구매자',
-          style: const TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Get.theme.colorScheme.onSurface, // 검은색 명시
+          ),
         ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               '${order.items.length}개 상품 • ${NumberFormat('#,###').format(order.totalAmount)}원',
+              style: TextStyle(
+                color: Get.theme.colorScheme.onSurface.withOpacity(0.8), // 진한 회색
+              ),
             ),
             const SizedBox(height: 2),
             Text(
               DateFormat('HH:mm').format(order.orderDate),
-              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+              style: TextStyle(
+                fontSize: 12, 
+                color: Get.theme.colorScheme.onSurface.withOpacity(0.6), // 더 진한 회색
+              ),
             ),
           ],
         ),
@@ -233,7 +250,10 @@ class SellerHomeView extends GetView<SellerHomeController> {
               '주문 현황',
               style: Theme.of(
                 context,
-              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+              ).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: Get.theme.colorScheme.onSurface, // 검은색 명시
+              ),
             ),
           ],
         ),
@@ -303,7 +323,10 @@ class SellerHomeView extends GetView<SellerHomeController> {
             const SizedBox(height: 4),
             Text(
               title,
-              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+              style: TextStyle(
+                fontSize: 12, 
+                color: Get.theme.colorScheme.onSurface.withOpacity(0.7), // 더 진한 회색
+              ),
             ),
           ],
         ),

@@ -34,7 +34,7 @@ class ConnectionModel {
   // Factory constructor for creating ConnectionModel from Firestore document
   factory ConnectionModel.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
-    
+
     return ConnectionModel(
       id: doc.id,
       buyerId: data['buyerId'] as String,
@@ -50,9 +50,10 @@ class ConnectionModel {
         orElse: () => ConnectionStatus.pending,
       ),
       requestedAt: (data['requestedAt'] as Timestamp).toDate(),
-      connectedAt: data['connectedAt'] != null 
-          ? (data['connectedAt'] as Timestamp).toDate()
-          : null,
+      connectedAt:
+          data['connectedAt'] != null
+              ? (data['connectedAt'] as Timestamp).toDate()
+              : null,
     );
   }
 
@@ -72,14 +73,16 @@ class ConnectionModel {
         (status) => status.name == map['status'],
         orElse: () => ConnectionStatus.pending,
       ),
-      requestedAt: map['requestedAt'] is Timestamp 
-          ? (map['requestedAt'] as Timestamp).toDate()
-          : DateTime.parse(map['requestedAt'] as String),
-      connectedAt: map['connectedAt'] != null
-          ? (map['connectedAt'] is Timestamp 
-              ? (map['connectedAt'] as Timestamp).toDate()
-              : DateTime.parse(map['connectedAt'] as String))
-          : null,
+      requestedAt:
+          map['requestedAt'] is Timestamp
+              ? (map['requestedAt'] as Timestamp).toDate()
+              : DateTime.parse(map['requestedAt'] as String),
+      connectedAt:
+          map['connectedAt'] != null
+              ? (map['connectedAt'] is Timestamp
+                  ? (map['connectedAt'] as Timestamp).toDate()
+                  : DateTime.parse(map['connectedAt'] as String))
+              : null,
     );
   }
 
@@ -96,9 +99,8 @@ class ConnectionModel {
       'sellerBusinessName': sellerBusinessName,
       'status': status.name,
       'requestedAt': Timestamp.fromDate(requestedAt),
-      'connectedAt': connectedAt != null 
-          ? Timestamp.fromDate(connectedAt!)
-          : null,
+      'connectedAt':
+          connectedAt != null ? Timestamp.fromDate(connectedAt!) : null,
     };
   }
 
@@ -136,7 +138,7 @@ class ConnectionModel {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    
+
     return other is ConnectionModel &&
         other.id == id &&
         other.buyerId == buyerId &&
@@ -167,6 +169,8 @@ class ConnectionModel {
         requestedAt.hashCode ^
         connectedAt.hashCode;
   }
+
+  get updatedAt => null;
 
   @override
   String toString() {

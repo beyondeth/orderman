@@ -29,7 +29,23 @@ class MainController extends GetxController {
 
   // 탭 변경
   void changeTab(int index) {
-    currentTabIndex.value = index;
+    try {
+      // 유효한 인덱스 범위 확인
+      if (index < 0 || index > 3) {
+        print('=== MainController: Invalid tab index: $index ===');
+        return;
+      }
+      
+      print('=== MainController: Changing tab from ${currentTabIndex.value} to $index ===');
+      currentTabIndex.value = index;
+    } catch (e) {
+      print('=== MainController: Error changing tab: $e ===');
+    }
+  }
+
+  // 탭 변경 (별칭)
+  void changeTabIndex(int index) {
+    changeTab(index);
   }
 
   // 프로필 화면으로 이동
