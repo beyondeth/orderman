@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../core/theme/app_colors.dart';
 import '../../controllers/main_controller.dart';
 import '../../controllers/buyer/buyer_home_controller.dart';
 import '../../controllers/buyer/order_controller.dart';
@@ -19,430 +20,441 @@ import '../seller/product_management_view.dart';
 import '../seller/seller_orders_view.dart';
 import '../seller/connection_requests_view.dart';
 
+// 커스텀 AppBar 위젯 - PreferredSizeWidget 구현
+class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
+  const CustomAppBar({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final MainController controller = Get.find<MainController>();
+
+    return Obx(() {
+      // 사용자 정보가 없는 경우 기본 AppBar
+      if (controller.currentUser == null) {
+        return AppBar(title: const Text('Order Market'), centerTitle: true);
+      }
+
+      return AppBar(
+        title: Text(_getAppBarTitle(controller)),
+        centerTitle: true,
+        actions: _buildActions(context, controller),
+      );
+    });
+  }
+
+  String _getAppBarTitle(MainController controller) {
+    if (controller.isBuyer) {
+      return _getBuyerTitle(controller.currentTabIndex.value);
+    } else if (controller.isSeller) {
+      return _getSellerTitle(controller.currentTabIndex.value);
+    }
+    return 'Order Market';
+  }
+
+  String _getBuyerTitle(int index) {
+    const titles = ['홈', '주문', '주문 내역', '판매자 연결'];
+    return index < titles.length ? titles[index] : '홈';
+  }
+
+  String _getSellerTitle(int index) {
+    const titles = ['홈', '상품 관리', '주문 관리', '고객 관리'];
+    return index < titles.length ? titles[index] : '홈';
+  }
+
+  List<Widget> _buildActions(BuildContext context, MainController controller) {
+    return [
+      IconButton(
+        onPressed: () => Get.toNamed('/profile'),
+        icon: const Icon(Icons.account_circle_outlined),
+        tooltip: '프로필',
+      ),
+      PopupMenuButton<String>(
+        onSelected: (value) => _handleMenuSelection(value, context, controller),
+        itemBuilder:
+            (context) => [
+              const PopupMenuItem(
+                value: 'profile',
+                child: ListTile(
+                  leading: Icon(Icons.person),
+                  title: Text('프로필'),
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'settings',
+                child: ListTile(
+                  leading: Icon(Icons.settings),
+                  title: Text('설정'),
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+              const PopupMenuDivider(),
+              const PopupMenuItem(
+                value: 'logout',
+                child: ListTile(
+                  leading: Icon(Icons.logout, color: Colors.red),
+                  title: Text('로그아웃', style: TextStyle(color: Colors.red)),
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+            ],
+      ),
+    ];
+  }
+
+  void _handleMenuSelection(
+    String value,
+    BuildContext context,
+    MainController controller,
+  ) {
+    switch (value) {
+      case 'profile':
+        Get.toNamed('/profile');
+        break;
+      case 'settings':
+        Get.toNamed('/settings');
+        break;
+      case 'logout':
+        _showLogoutDialog(context, controller);
+        break;
+    }
+  }
+
+  void _showLogoutDialog(BuildContext context, MainController controller) {
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: Text(
+              '로그아웃',
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            content: Text(
+              '정말 로그아웃하시겠습니까?',
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
+            ),
+            backgroundColor: AppColors.surface,
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text(
+                  '취소',
+                  style: TextStyle(color: AppColors.textSecondary),
+                ),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  controller.signOut();
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                ),
+                child: const Text('로그아웃'),
+              ),
+            ],
+          ),
+    );
+  }
+
+  @override
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+}
+
+// MainViewRefactored - GetView 사용
 class MainView extends GetView<MainController> {
   const MainView({super.key});
 
   @override
   Widget build(BuildContext context) {
     // 필요한 컨트롤러들을 미리 등록
-    Get.put(BuyerHomeController());
-    Get.put(SellerHomeController());
-    
-    // 구매자용 컨트롤러들
-    if (!Get.isRegistered<OrderController>()) {
-      Get.put(OrderController());
-    }
-    if (!Get.isRegistered<OrderHistoryController>()) {
-      Get.put(OrderHistoryController());
-    }
-    if (!Get.isRegistered<SellerConnectController>()) {
-      Get.put(SellerConnectController());
-    }
-    
-    // 판매자용 컨트롤러들
-    if (!Get.isRegistered<ProductManagementController>()) {
-      Get.put(ProductManagementController());
-    }
-    if (!Get.isRegistered<SellerOrdersController>()) {
-      Get.put(SellerOrdersController());
-    }
-    if (!Get.isRegistered<ConnectionRequestsController>()) {
-      Get.put(ConnectionRequestsController());
-    }
-    
+    _initializeControllers();
+
     return Scaffold(
-      appBar: _buildFixedAppBar(context),
-      body: Obx(() {
-        print('=== MainView - Current User: ${controller.currentUser?.displayName} ===');
-        print('=== MainView - User Role: ${controller.currentUser?.role} ===');
-        print('=== MainView - Is Buyer: ${controller.isBuyer} ===');
-        print('=== MainView - Is Seller: ${controller.isSeller} ===');
-        print('=== MainView - Current Tab: ${controller.currentTabIndex.value} ===');
-        
-        // 사용자 정보가 없는 경우 로딩 화면
-        if (controller.currentUser == null) {
-          return const Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                CircularProgressIndicator(),
-                SizedBox(height: 16),
-                Text('사용자 정보를 불러오는 중...'),
-              ],
-            ),
-          );
-        }
-        
-        if (controller.isBuyer) {
-          print('=== 구매자 화면 렌더링 ===');
-          return _buildBuyerContent();
-        } else if (controller.isSeller) {
-          print('=== 판매자 화면 렌더링 ===');
-          return _buildSellerContent();
-        } else {
-          // 역할이 명확하지 않은 경우
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.error_outline, size: 64, color: Colors.red),
-                const SizedBox(height: 16),
-                Text('사용자 역할을 확인할 수 없습니다: ${controller.currentUser?.role}'),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: () => controller.signOut(),
-                  child: const Text('다시 로그인'),
-                ),
-              ],
-            ),
-          );
-        }
-      }),
-      bottomNavigationBar: Obx(() {
-        print('=== BottomNav - Is Buyer: ${controller.isBuyer} ===');
-        print('=== BottomNav - Is Seller: ${controller.isSeller} ===');
-        return _buildBottomNavigationBar(context);
-      }),
+      appBar: const CustomAppBar(),
+      body: Obx(() => _buildBodySafe(context)),
+      bottomNavigationBar: Obx(() => _buildBottomNavigationSafe(context)),
     );
   }
 
-  Widget _buildBuyerContent() {
-    switch (controller.currentTabIndex.value) {
-      case 0: // 홈
-        return const BuyerHomeView();
-      case 1: // 주문
-        return const OrderTabView();
-      case 2: // 내역
-        return const OrderHistoryView();
-      case 3: // 연결
-        return const SellerConnectView();
-      default:
-        return const BuyerHomeView();
-    }
+  void _initializeControllers() {
+    // 컨트롤러 등록을 lazyPut으로 최적화
+    Get.lazyPut(() => BuyerHomeController());
+    Get.lazyPut(() => SellerHomeController());
+    Get.lazyPut(() => OrderController());
+    Get.lazyPut(() => OrderHistoryController());
+    Get.lazyPut(() => SellerConnectController());
+    Get.lazyPut(() => ProductManagementController());
+    Get.lazyPut(() => SellerOrdersController());
+    Get.lazyPut(() => ConnectionRequestsController());
+
+    print('=== MainView: 모든 컨트롤러 등록 완료 ===');
   }
 
-  Widget _buildSellerContent() {
-    switch (controller.currentTabIndex.value) {
-      case 0: // 홈
-        return const SellerHomeView();
-      case 1: // 상품
-        return const ProductManagementView();
-      case 2: // 주문
-        return const SellerOrdersView();
-      case 3: // 연결
-        return const ConnectionRequestsView();
-      default:
-        return const SellerHomeView();
+  Widget _buildBodySafe(BuildContext context) {
+    // 컨트롤러 안전성 확인
+    if (!Get.isRegistered<MainController>()) {
+      return _buildLoadingState('컨트롤러를 초기화하는 중...');
     }
-  }
 
-  Widget _buildBottomNavigationBar(BuildContext context) {
-    // 사용자 정보가 없으면 빈 컨테이너 반환
+    // 사용자 정보가 없는 경우 로딩 화면
     if (controller.currentUser == null) {
-      print('=== BottomNav - No user, returning empty container ===');
-      return const SizedBox.shrink();
+      return _buildLoadingState('사용자 정보를 불러오는 중...');
     }
-    
-    if (controller.isBuyer) {
-      print('=== BottomNav - Building buyer navigation ===');
-      return BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: Theme.of(context).primaryColor,
-        unselectedItemColor: Colors.grey,
-        currentIndex: controller.currentTabIndex.value,
-        onTap: controller.changeTab,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: '홈',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.shopping_cart),
-            label: '주문',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.receipt_long),
-            label: '내역',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.people),
-            label: '연결',
-          ),
-        ],
+
+    try {
+      if (controller.isBuyer) {
+        return _buildBuyerContent();
+      } else if (controller.isSeller) {
+        return _buildSellerContent();
+      } else {
+        return _buildErrorState(
+          '사용자 역할을 확인할 수 없습니다',
+          '사용자 역할: ${controller.currentUser?.role}',
+          Icons.error_outline,
+          '다시 로그인',
+          () => controller.signOut(),
+        );
+      }
+    } catch (e) {
+      return _buildErrorState(
+        '화면 로딩 중 오류가 발생했습니다',
+        '오류: $e',
+        Icons.error_outline,
+        '새로고침',
+        () => Get.forceAppUpdate(),
       );
-    } else if (controller.isSeller) {
-      print('=== BottomNav - Building seller navigation ===');
-      return BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: Theme.of(context).primaryColor,
-        unselectedItemColor: Colors.grey,
-        currentIndex: controller.currentTabIndex.value,
-        onTap: controller.changeTab,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: '홈',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.inventory),
-            label: '상품',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.receipt_long),
-            label: '주문',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.people),
-            label: '연결',
-          ),
-        ],
-      );
-    } else {
-      print('=== BottomNav - Unknown user type, returning empty container ===');
-      return const SizedBox.shrink();
     }
   }
 
-  PreferredSizeWidget _buildFixedAppBar(BuildContext context) {
-    return PreferredSize(
-      preferredSize: const Size.fromHeight(kToolbarHeight),
-      child: Obx(() {
-        // 사용자 정보가 없는 경우 기본 AppBar
-        if (controller.currentUser == null) {
-          return AppBar(
-            backgroundColor: Theme.of(context).primaryColor,
-            foregroundColor: Colors.white,
-            elevation: 0,
-            title: const Text('로딩 중...'),
-          );
-        }
-
-        if (controller.isBuyer) {
-          return AppBar(
-            backgroundColor: Theme.of(context).primaryColor,
-            foregroundColor: Colors.white,
-            elevation: 0,
-            title: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: const Text(
-                    '구매자',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        controller.currentUser?.displayName ?? '사용자',
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      if (controller.currentUser?.businessName?.isNotEmpty == true)
-                        Text(
-                          controller.currentUser!.businessName!,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.white.withOpacity(0.8),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            actions: [
-              PopupMenuButton<String>(
-                icon: const Icon(Icons.settings, color: Colors.white),
-                onSelected: (value) {
-                  switch (value) {
-                    case 'profile':
-                      _goToProfile();
-                      break;
-                    case 'settings':
-                      _goToSettings();
-                      break;
-                    case 'logout':
-                      _showLogoutDialog(context);
-                      break;
-                  }
-                },
-                itemBuilder: (BuildContext context) => [
-                  const PopupMenuItem<String>(
-                    value: 'profile',
-                    child: ListTile(
-                      leading: Icon(Icons.person),
-                      title: Text('프로필'),
-                      contentPadding: EdgeInsets.zero,
-                    ),
-                  ),
-                  const PopupMenuItem<String>(
-                    value: 'settings',
-                    child: ListTile(
-                      leading: Icon(Icons.settings),
-                      title: Text('설정'),
-                      contentPadding: EdgeInsets.zero,
-                    ),
-                  ),
-                  const PopupMenuDivider(),
-                  const PopupMenuItem<String>(
-                    value: 'logout',
-                    child: ListTile(
-                      leading: Icon(Icons.logout, color: Colors.red),
-                      title: Text('로그아웃', style: TextStyle(color: Colors.red)),
-                      contentPadding: EdgeInsets.zero,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          );
-        } else if (controller.isSeller) {
-          return AppBar(
-            backgroundColor: Theme.of(context).primaryColor,
-            foregroundColor: Colors.white,
-            elevation: 0,
-            title: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: const Text(
-                    '판매자',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        controller.currentUser?.displayName ?? '사용자',
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      if (controller.currentUser?.businessName?.isNotEmpty == true)
-                        Text(
-                          controller.currentUser!.businessName!,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.white.withOpacity(0.8),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            actions: [
-              PopupMenuButton<String>(
-                icon: const Icon(Icons.settings, color: Colors.white),
-                onSelected: (value) {
-                  switch (value) {
-                    case 'profile':
-                      _goToProfile();
-                      break;
-                    case 'settings':
-                      _goToSettings();
-                      break;
-                    case 'logout':
-                      _showLogoutDialog(context);
-                      break;
-                  }
-                },
-                itemBuilder: (BuildContext context) => [
-                  const PopupMenuItem<String>(
-                    value: 'profile',
-                    child: ListTile(
-                      leading: Icon(Icons.person),
-                      title: Text('프로필'),
-                      contentPadding: EdgeInsets.zero,
-                    ),
-                  ),
-                  const PopupMenuItem<String>(
-                    value: 'settings',
-                    child: ListTile(
-                      leading: Icon(Icons.settings),
-                      title: Text('설정'),
-                      contentPadding: EdgeInsets.zero,
-                    ),
-                  ),
-                  const PopupMenuDivider(),
-                  const PopupMenuItem<String>(
-                    value: 'logout',
-                    child: ListTile(
-                      leading: Icon(Icons.logout, color: Colors.red),
-                      title: Text('로그아웃', style: TextStyle(color: Colors.red)),
-                      contentPadding: EdgeInsets.zero,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          );
-        } else {
-          return AppBar(
-            backgroundColor: Theme.of(context).primaryColor,
-            foregroundColor: Colors.white,
-            elevation: 0,
-            title: const Text('오류'),
-          );
-        }
-      }),
-    );
-  }
-
-  void _goToProfile() {
-    // 프로필 화면으로 이동 로직
-    Get.snackbar('알림', '프로필 화면으로 이동합니다.');
-  }
-
-  void _goToSettings() {
-    // 설정 화면으로 이동 로직
-    Get.snackbar('알림', '설정 화면으로 이동합니다.');
-  }
-
-  void _showLogoutDialog(BuildContext context) {
-    Get.dialog(
-      AlertDialog(
-        title: const Text('로그아웃'),
-        content: const Text('정말 로그아웃하시겠습니까?'),
-        actions: [
-          TextButton(onPressed: () => Get.back(), child: const Text('취소')),
-          TextButton(
-            onPressed: () {
-              Get.back();
-              controller.signOut();
-            },
-            child: const Text('로그아웃'),
+  Widget _buildLoadingState(String message) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const CircularProgressIndicator(),
+          const SizedBox(height: 16),
+          Text(
+            message,
+            style: Theme.of(
+              Get.context!,
+            ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
           ),
         ],
       ),
     );
+  }
+
+  Widget _buildErrorState(
+    String title,
+    String subtitle,
+    IconData icon,
+    String buttonText,
+    VoidCallback onPressed,
+  ) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 64, color: AppColors.error),
+            const SizedBox(height: 24),
+            Text(
+              title,
+              style: Theme.of(Get.context!).textTheme.titleLarge?.copyWith(
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              subtitle,
+              style: Theme.of(
+                Get.context!,
+              ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              onPressed: onPressed,
+              icon: const Icon(Icons.refresh),
+              label: Text(buttonText),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBuyerContent() {
+    return Obx(() {
+      final currentIndex = controller.currentTabIndex.value.clamp(0, 3);
+
+      // 각 탭별로 안전한 위젯 생성
+      Widget getCurrentView() {
+        switch (currentIndex) {
+          case 0:
+            return const BuyerHomeView();
+          case 1:
+            return const OrderTabView();
+          case 2:
+            return const OrderHistoryView();
+          case 3:
+            return const SellerConnectView();
+          default:
+            return const BuyerHomeView();
+        }
+      }
+
+      return Container(
+        key: ValueKey('buyer_content_$currentIndex'),
+        child: getCurrentView(),
+      );
+    });
+  }
+
+  Widget _buildSellerContent() {
+    return Obx(() {
+      final currentIndex = controller.currentTabIndex.value.clamp(0, 3);
+
+      // 각 탭별로 안전한 위젯 생성
+      Widget getCurrentView() {
+        switch (currentIndex) {
+          case 0:
+            return const SellerHomeView();
+          case 1:
+            return const ProductManagementView();
+          case 2:
+            return const SellerOrdersView();
+          case 3:
+            return const ConnectionRequestsView();
+          default:
+            return const SellerHomeView();
+        }
+      }
+
+      return Container(
+        key: ValueKey('seller_content_$currentIndex'),
+        child: getCurrentView(),
+      );
+    });
+  }
+
+  Widget _buildBottomNavigationSafe(BuildContext context) {
+    // 컨트롤러 안전성 확인
+    if (!Get.isRegistered<MainController>()) {
+      return const SizedBox.shrink();
+    }
+
+    // 사용자 정보 확인
+    if (controller.currentUser == null) {
+      return const SizedBox.shrink();
+    }
+
+    try {
+      if (controller.isBuyer) {
+        return BottomNavigationBar(
+          type: BottomNavigationBarType.fixed,
+          selectedItemColor: AppColors.primary,
+          unselectedItemColor: AppColors.textSecondary,
+          backgroundColor: AppColors.surface,
+          elevation: 8,
+          currentIndex: controller.currentTabIndex.value,
+          onTap: (index) {
+            if (index >= 0 && index < 4) {
+              controller.changeTabIndex(index);
+            }
+          },
+          selectedLabelStyle: const TextStyle(
+            fontWeight: FontWeight.w600,
+            fontSize: 12,
+          ),
+          unselectedLabelStyle: const TextStyle(
+            fontWeight: FontWeight.w400,
+            fontSize: 12,
+          ),
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home_outlined),
+              activeIcon: Icon(Icons.home),
+              label: '홈',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.shopping_cart_outlined),
+              activeIcon: Icon(Icons.shopping_cart),
+              label: '주문',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.receipt_long_outlined),
+              activeIcon: Icon(Icons.receipt_long),
+              label: '내역',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.people_outline),
+              activeIcon: Icon(Icons.people),
+              label: '연결',
+            ),
+          ],
+        );
+      } else if (controller.isSeller) {
+        return BottomNavigationBar(
+          type: BottomNavigationBarType.fixed,
+          selectedItemColor: AppColors.primary,
+          unselectedItemColor: AppColors.textSecondary,
+          backgroundColor: AppColors.surface,
+          elevation: 8,
+          currentIndex: controller.currentTabIndex.value,
+          onTap: (index) {
+            if (index >= 0 && index < 4) {
+              controller.changeTabIndex(index);
+            }
+          },
+          selectedLabelStyle: const TextStyle(
+            fontWeight: FontWeight.w600,
+            fontSize: 12,
+          ),
+          unselectedLabelStyle: const TextStyle(
+            fontWeight: FontWeight.w400,
+            fontSize: 12,
+          ),
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home_outlined),
+              activeIcon: Icon(Icons.home),
+              label: '홈',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.inventory_outlined),
+              activeIcon: Icon(Icons.inventory),
+              label: '상품',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.receipt_long_outlined),
+              activeIcon: Icon(Icons.receipt_long),
+              label: '주문',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.people_outline),
+              activeIcon: Icon(Icons.people),
+              label: '연결',
+            ),
+          ],
+        );
+      }
+    } catch (e) {
+      print('하단 네비게이션 렌더링 오류: $e');
+    }
+
+    return const SizedBox.shrink();
   }
 }

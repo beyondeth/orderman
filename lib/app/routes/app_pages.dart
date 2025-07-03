@@ -15,8 +15,7 @@ import '../presentation/views/seller/product_management_view.dart';
 import '../presentation/views/seller/seller_orders_view.dart';
 import '../presentation/views/seller/connection_requests_view.dart';
 import '../presentation/views/profile/profile_view.dart';
-import '../presentation/views/main/main_view.dart';
-import '../presentation/views/main/main_view_refactored.dart';
+import '../presentation/views/main/main_view.dart'; // 정리된 main_view
 
 import '../presentation/controllers/splash_controller.dart';
 import '../presentation/controllers/auth/login_controller.dart';
@@ -116,7 +115,7 @@ class AppPages {
     // Main (with persistent bottom navigation)
     GetPage(
       name: AppRoutes.main,
-      page: () => const MainViewRefactored(),
+      page: () => const MainView(), // 정리된 MainView 사용
       binding: BindingsBuilder(() {
         Get.lazyPut<MainController>(() => MainController());
       }),

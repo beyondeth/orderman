@@ -3,6 +3,8 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/constants/app_constants.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../controllers/seller/seller_home_controller.dart';
 
 class SellerHomeView extends GetView<SellerHomeController> {
@@ -14,19 +16,17 @@ class SellerHomeView extends GetView<SellerHomeController> {
       onRefresh: controller.refreshData,
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(AppConstants.defaultPadding),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 사용자 환영 메시지
+            // 환영 섹션
             _buildWelcomeSection(context),
+            const SizedBox(height: AppTheme.xlarge),
 
-            const SizedBox(height: AppConstants.largePadding),
-
-            // 오늘의 주문 현황 (메인 기능)
+            // 오늘의 주문 현황
             _buildTodayOrdersSection(context),
-
-            const SizedBox(height: AppConstants.largePadding),
+            const SizedBox(height: AppTheme.xlarge),
 
             // 주문 상태 요약
             _buildOrderStatusSummary(context),
@@ -34,57 +34,70 @@ class SellerHomeView extends GetView<SellerHomeController> {
         ),
       ),
     );
-    // bottomNavigationBar는 MainView에서 관리
   }
 
   Widget _buildWelcomeSection(BuildContext context) {
-    return Card(
-      elevation: 2,
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(AppConstants.defaultPadding),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          gradient: LinearGradient(
-            colors: [
-              Theme.of(context).primaryColor.withOpacity(0.1),
-              Theme.of(context).primaryColor.withOpacity(0.05),
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [AppColors.primary, AppColors.primaryDark],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(
-                  Icons.store,
-                  color: Theme.of(context).primaryColor,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withOpacity(0.3),
+            offset: const Offset(0, 8),
+            blurRadius: 24,
+            spreadRadius: 0,
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.store_rounded,
+                  color: Colors.white,
                   size: 24,
                 ),
-                const SizedBox(width: 8),
-                Text(
-                  '안녕하세요!',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: Get.theme.colorScheme.onSurface, // 검은색 명시
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(
-              '오늘도 신선한 식자재로 고객들에게 만족을 드려보세요.',
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(
-                color: Get.theme.colorScheme.onSurface.withOpacity(0.7), // 더 진한 회색
               ),
-            ),
-          ],
-        ),
+              const SizedBox(width: AppTheme.medium),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '안녕하세요! 👋',
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '오늘도 신선한 식자재로 고객들에게 만족을 드려보세요',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Colors.white.withOpacity(0.9),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -98,29 +111,43 @@ class SellerHomeView extends GetView<SellerHomeController> {
           children: [
             Row(
               children: [
-                Icon(Icons.today, color: Theme.of(context).primaryColor),
-                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    Icons.today_rounded,
+                    color: AppColors.primary,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 12),
                 Text(
                   '오늘의 주문',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: Get.theme.colorScheme.onSurface, // 검은색 명시
+                    color: AppColors.textPrimary,
                   ),
                 ),
               ],
             ),
-            TextButton(
+            TextButton.icon(
               onPressed: () => controller.goToOrderManagement(),
-              child: const Text('전체 보기'),
+              icon: const Icon(Icons.arrow_forward_ios, size: 16),
+              label: const Text('전체 보기'),
+              style: TextButton.styleFrom(
+                foregroundColor: AppColors.primary,
+              ),
             ),
           ],
         ),
-
-        const SizedBox(height: AppConstants.defaultPadding),
+        const SizedBox(height: 20),
 
         Obx(() {
           if (controller.isLoading.value) {
-            return const Center(child: CircularProgressIndicator());
+            return _buildLoadingState();
           }
 
           if (controller.todayOrders.isEmpty) {
@@ -130,11 +157,10 @@ class SellerHomeView extends GetView<SellerHomeController> {
           return ListView.separated(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            itemCount:
-                controller.todayOrders.length > 3
-                    ? 3
-                    : controller.todayOrders.length,
-            separatorBuilder: (context, index) => const SizedBox(height: 8),
+            itemCount: controller.todayOrders.length > 3 
+                ? 3 
+                : controller.todayOrders.length,
+            separatorBuilder: (context, index) => const SizedBox(height: 12),
             itemBuilder: (context, index) {
               final order = controller.todayOrders[index];
               return _buildOrderCard(context, order);
@@ -145,92 +171,147 @@ class SellerHomeView extends GetView<SellerHomeController> {
     );
   }
 
+  Widget _buildLoadingState() {
+    return Container(
+      padding: const EdgeInsets.all(40),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0A000000),
+            offset: Offset(0, 2),
+            blurRadius: 8,
+          ),
+        ],
+      ),
+      child: const Center(
+        child: CircularProgressIndicator(),
+      ),
+    );
+  }
+
   Widget _buildEmptyOrdersState(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(AppConstants.largePadding),
-        child: Column(
-          children: [
-            Icon(Icons.inbox_outlined, size: 48, color: Colors.grey[400]),
-            const SizedBox(height: 16),
-            Text(
-              '오늘 들어온 주문이 없습니다',
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(
-                color: Get.theme.colorScheme.onSurface.withOpacity(0.8), // 더 진한 회색
-              ),
+    return Container(
+      padding: const EdgeInsets.all(40),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0A000000),
+            offset: Offset(0, 2),
+            blurRadius: 8,
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppColors.background,
+              borderRadius: BorderRadius.circular(16),
             ),
-            const SizedBox(height: 8),
-            Text(
-              '구매자들의 주문을 기다리고 있습니다.',
-              textAlign: TextAlign.center,
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(
-                color: Get.theme.colorScheme.onSurface.withOpacity(0.6), // 더 진한 회색
-              ),
+            child: Icon(
+              Icons.inbox_outlined,
+              size: 48,
+              color: AppColors.textSecondary,
             ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            '오늘 들어온 주문이 없습니다',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: AppTheme.small),
+          Text(
+            '구매자들의 주문을 기다리고 있습니다',
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildOrderCard(BuildContext context, order) {
-    return Card(
-      elevation: 1,
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
-          child: Icon(
-            Icons.person,
-            color: Theme.of(context).primaryColor,
-            size: 20,
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0A000000),
+            offset: Offset(0, 2),
+            blurRadius: 8,
           ),
-        ),
-        title: Text(
-          order.buyerName ?? '구매자',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Get.theme.colorScheme.onSurface, // 검은색 명시
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              Icons.person_rounded,
+              color: AppColors.primary,
+              size: 24,
+            ),
           ),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              '${order.items.length}개 상품 • ${NumberFormat('#,###').format(order.totalAmount)}원',
-              style: TextStyle(
-                color: Get.theme.colorScheme.onSurface.withOpacity(0.8), // 진한 회색
+          const SizedBox(width: AppTheme.medium),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  order.buyerName ?? '구매자',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '${order.items.length}개 상품 • ${NumberFormat('#,###').format(order.totalAmount)}원',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  DateFormat('HH:mm').format(order.orderDate),
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: AppColors.textHint,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: Colors.orange.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Text(
+              '대기 중',
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                color: Colors.orange.shade700,
+                fontWeight: FontWeight.w600,
               ),
             ),
-            const SizedBox(height: 2),
-            Text(
-              DateFormat('HH:mm').format(order.orderDate),
-              style: TextStyle(
-                fontSize: 12, 
-                color: Get.theme.colorScheme.onSurface.withOpacity(0.6), // 더 진한 회색
-              ),
-            ),
-          ],
-        ),
-        trailing: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          decoration: BoxDecoration(
-            color: Colors.orange.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(12),
           ),
-          child: Text(
-            '대기 중',
-            style: TextStyle(
-              color: Colors.orange[700],
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-        isThreeLine: true,
+        ],
       ),
     );
   }
@@ -241,24 +322,29 @@ class SellerHomeView extends GetView<SellerHomeController> {
       children: [
         Row(
           children: [
-            Icon(
-              Icons.analytics_outlined,
-              color: Theme.of(context).primaryColor,
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                Icons.analytics_outlined,
+                color: AppColors.primary,
+                size: 20,
+              ),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 12),
             Text(
               '주문 현황',
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.bold,
-                color: Get.theme.colorScheme.onSurface, // 검은색 명시
+                color: AppColors.textPrimary,
               ),
             ),
           ],
         ),
-
-        const SizedBox(height: AppConstants.defaultPadding),
+        const SizedBox(height: 20),
 
         Row(
           children: [
@@ -266,9 +352,9 @@ class SellerHomeView extends GetView<SellerHomeController> {
               child: _buildStatusCard(
                 context,
                 '신규 주문',
-                0, // 임시 데이터
+                0,
                 Colors.orange,
-                Icons.new_releases,
+                Icons.new_releases_rounded,
               ),
             ),
             const SizedBox(width: 12),
@@ -276,9 +362,9 @@ class SellerHomeView extends GetView<SellerHomeController> {
               child: _buildStatusCard(
                 context,
                 '처리 중',
-                0, // 임시 데이터
+                0,
                 Colors.blue,
-                Icons.pending,
+                Icons.pending_rounded,
               ),
             ),
             const SizedBox(width: 12),
@@ -286,9 +372,9 @@ class SellerHomeView extends GetView<SellerHomeController> {
               child: _buildStatusCard(
                 context,
                 '완료',
-                0, // 임시 데이터
+                0,
                 Colors.green,
-                Icons.done_all,
+                Icons.done_all_rounded,
               ),
             ),
           ],
@@ -304,53 +390,45 @@ class SellerHomeView extends GetView<SellerHomeController> {
     Color color,
     IconData icon,
   ) {
-    return Card(
-      elevation: 1,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            Icon(icon, color: color, size: 24),
-            const SizedBox(height: 8),
-            Text(
-              count.toString(),
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: color,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 12, 
-                color: Get.theme.colorScheme.onSurface.withOpacity(0.7), // 더 진한 회색
-              ),
-            ),
-          ],
-        ),
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0A000000),
+            offset: Offset(0, 2),
+            blurRadius: 8,
+          ),
+        ],
       ),
-    );
-  }
-
-  void _showLogoutDialog(BuildContext context) {
-    Get.dialog(
-      AlertDialog(
-        title: const Text('로그아웃'),
-        content: const Text('정말 로그아웃 하시겠습니까?'),
-        actions: [
-          TextButton(onPressed: () => Get.back(), child: const Text('취소')),
-          ElevatedButton(
-            onPressed: () {
-              Get.back();
-              controller.signOut();
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
             ),
-            child: const Text('로그아웃'),
+            child: Icon(icon, color: color, size: 24),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            count.toString(),
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            title,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: AppColors.textSecondary,
+              fontWeight: FontWeight.w500,
+            ),
+            textAlign: TextAlign.center,
           ),
         ],
       ),

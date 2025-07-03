@@ -1,452 +1,169 @@
 import 'package:flutter/material.dart';
-import 'app_typography.dart';
-import 'app_spacing.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'app_colors.dart';
 
+/// 🎯 심플한 앱 테마 설정
+/// 폰트 크기나 간격을 바꾸고 싶을 때 이 파일에서 수정하세요!
 class AppTheme {
+  // 📏 간격 설정 (4개만) - 수정하기 쉽게
+  static const double small = 8.0;    // 작은 간격
+  static const double medium = 16.0;  // 보통 간격  
+  static const double large = 24.0;   // 큰 간격
+  static const double xlarge = 32.0;  // 매우 큰 간격
+  
+  // 📱 라이트 테마
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,
-
-      // Material Design 3 ColorScheme
-      colorScheme: AppColors.lightColorScheme,
-
-      // Material Design 3 Typography
-      textTheme: AppTypography.lightTextTheme,
-
-      // AppBar Theme
+      
+      // 🎨 색상 설정 (AppColors에서 가져옴)
+      colorScheme: const ColorScheme.light(
+        primary: AppColors.primary,
+        surface: AppColors.surface,
+        background: AppColors.background,
+        error: AppColors.error,
+        onPrimary: Colors.white,
+        onSurface: AppColors.textPrimary,
+        onBackground: AppColors.textPrimary,
+        onError: Colors.white,
+      ),
+      
+      // 📝 텍스트 스타일 (Google Fonts Inter 사용)
+      textTheme: GoogleFonts.interTextTheme().copyWith(
+        // 🔤 큰 제목 (24px, 굵게)
+        headlineLarge: GoogleFonts.inter(
+          fontSize: 24, 
+          fontWeight: FontWeight.bold, 
+          color: AppColors.textPrimary,
+        ),
+        
+        // 🔤 중간 제목 (20px, 세미볼드)
+        headlineMedium: GoogleFonts.inter(
+          fontSize: 20, 
+          fontWeight: FontWeight.w600, 
+          color: AppColors.textPrimary,
+        ),
+        
+        // 🔤 작은 제목 (18px, 세미볼드)
+        titleLarge: GoogleFonts.inter(
+          fontSize: 18, 
+          fontWeight: FontWeight.w600, 
+          color: AppColors.textPrimary,
+        ),
+        
+        // 🔤 중간 제목 (16px, 미디움)
+        titleMedium: GoogleFonts.inter(
+          fontSize: 16, 
+          fontWeight: FontWeight.w500, 
+          color: AppColors.textPrimary,
+        ),
+        
+        // 🔤 큰 본문 (16px, 보통)
+        bodyLarge: GoogleFonts.inter(
+          fontSize: 16, 
+          fontWeight: FontWeight.w400, 
+          color: AppColors.textPrimary,
+        ),
+        
+        // 🔤 보통 본문 (14px, 보통)
+        bodyMedium: GoogleFonts.inter(
+          fontSize: 14, 
+          fontWeight: FontWeight.w400, 
+          color: AppColors.textPrimary,
+        ),
+        
+        // 🔤 작은 텍스트 (12px, 보조 색상)
+        bodySmall: GoogleFonts.inter(
+          fontSize: 12, 
+          fontWeight: FontWeight.w400, 
+          color: AppColors.textSecondary,
+        ),
+        
+        // 🔤 라벨 (14px, 미디움)
+        labelLarge: GoogleFonts.inter(
+          fontSize: 14, 
+          fontWeight: FontWeight.w500, 
+          color: AppColors.textPrimary,
+        ),
+      ),
+      
+      // 🃏 카드 테마
+      cardTheme: CardTheme(
+        color: AppColors.surface,
+        elevation: 2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+      
+      // 📱 앱바 테마
       appBarTheme: AppBarTheme(
-        backgroundColor: AppColors.lightPrimary,
-        foregroundColor: AppColors.lightOnPrimary,
+        backgroundColor: AppColors.surface,
+        foregroundColor: AppColors.textPrimary,
         elevation: 0,
         centerTitle: true,
-        titleTextStyle: AppTypography.appBarTitle.copyWith(
-          color: AppColors.lightOnPrimary,
+        titleTextStyle: GoogleFonts.inter(
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
+          color: AppColors.textPrimary,
         ),
-        surfaceTintColor: Colors.transparent,
       ),
-
-      // Button Themes
+      
+      // 🔘 버튼 테마
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.lightPrimary,
-          foregroundColor: AppColors.lightOnPrimary,
-          padding: AppSpacing.symmetric(
-            horizontal: AppSpacing.lg,
-            vertical: AppSpacing.md,
-          ),
+          backgroundColor: AppColors.primary,
+          foregroundColor: Colors.white,
+          elevation: 0,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppSpacing.sm),
+            borderRadius: BorderRadius.circular(8),
           ),
-          textStyle: AppTypography.buttonText,
-          elevation: 1,
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          textStyle: GoogleFonts.inter(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
-
-      filledButtonTheme: FilledButtonThemeData(
-        style: FilledButton.styleFrom(
-          backgroundColor: AppColors.lightPrimary,
-          foregroundColor: AppColors.lightOnPrimary,
-          padding: AppSpacing.symmetric(
-            horizontal: AppSpacing.lg,
-            vertical: AppSpacing.md,
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppSpacing.sm),
-          ),
-          textStyle: AppTypography.buttonText,
-        ),
-      ),
-
-      outlinedButtonTheme: OutlinedButtonThemeData(
-        style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.lightPrimary,
-          padding: AppSpacing.symmetric(
-            horizontal: AppSpacing.lg,
-            vertical: AppSpacing.md,
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppSpacing.sm),
-          ),
-          side: const BorderSide(color: AppColors.lightOutline),
-          textStyle: AppTypography.buttonText,
-        ),
-      ),
-
-      textButtonTheme: TextButtonThemeData(
-        style: TextButton.styleFrom(
-          foregroundColor: AppColors.lightPrimary,
-          padding: AppSpacing.symmetric(
-            horizontal: AppSpacing.md,
-            vertical: AppSpacing.sm,
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppSpacing.sm),
-          ),
-          textStyle: AppTypography.buttonText,
-        ),
-      ),
-
-      // Input Decoration Theme
+      
+      // 📝 입력 필드 테마
       inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: AppColors.background,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.sm),
-          borderSide: const BorderSide(color: AppColors.lightOutline),
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide.none,
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.sm),
-          borderSide: const BorderSide(color: AppColors.lightOutline),
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: AppColors.textHint),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.sm),
-          borderSide: const BorderSide(color: AppColors.lightPrimary, width: 2),
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: AppColors.primary, width: 2),
         ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.sm),
-          borderSide: const BorderSide(color: AppColors.lightError),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        hintStyle: GoogleFonts.inter(
+          color: AppColors.textHint,
+          fontSize: 14,
         ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.sm),
-          borderSide: const BorderSide(color: AppColors.lightError, width: 2),
-        ),
-        contentPadding: AppSpacing.paddingMD,
-        labelStyle: AppTypography.bodyMedium.copyWith(
-          color: AppColors.lightOnSurfaceVariant,
-        ),
-        hintStyle: AppTypography.bodyMedium.copyWith(
-          color: AppColors.lightOnSurfaceVariant.withOpacity(0.6),
-        ),
-        filled: true,
-        fillColor: AppColors.lightSurfaceVariant.withOpacity(0.1),
-      ),
-
-      // Card Theme
-      cardTheme: CardTheme(
-        color: AppColors.lightSurface,
-        elevation: 1,
-        shadowColor: AppColors.lightOnSurface.withOpacity(0.1),
-        surfaceTintColor: AppColors.lightPrimary,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.md),
-        ),
-        margin: AppSpacing.paddingSM,
-      ),
-
-      // List Tile Theme
-      listTileTheme: ListTileThemeData(
-        contentPadding: AppSpacing.paddingMD,
-        titleTextStyle: AppTypography.titleMedium,
-        subtitleTextStyle: AppTypography.bodyMedium.copyWith(
-          color: AppColors.lightOnSurfaceVariant,
-        ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.sm),
-        ),
-      ),
-
-      // Bottom Navigation Bar Theme
-      bottomNavigationBarTheme: BottomNavigationBarThemeData(
-        backgroundColor: AppColors.lightSurface,
-        selectedItemColor: AppColors.lightPrimary,
-        unselectedItemColor: AppColors.lightOnSurfaceVariant,
-        selectedLabelStyle: AppTypography.labelMedium,
-        unselectedLabelStyle: AppTypography.labelMedium,
-        type: BottomNavigationBarType.fixed,
-        elevation: 3,
-      ),
-
-      // Navigation Bar Theme (Material 3)
-      navigationBarTheme: NavigationBarThemeData(
-        backgroundColor: AppColors.lightSurface,
-        indicatorColor: AppColors.lightPrimaryContainer,
-        labelTextStyle: MaterialStateProperty.resolveWith((states) {
-          if (states.contains(MaterialState.selected)) {
-            return AppTypography.labelMedium.copyWith(
-              color: AppColors.lightOnSurface,
-            );
-          }
-          return AppTypography.labelMedium.copyWith(
-            color: AppColors.lightOnSurfaceVariant,
-          );
-        }),
-        iconTheme: MaterialStateProperty.resolveWith((states) {
-          if (states.contains(MaterialState.selected)) {
-            return const IconThemeData(
-              color: AppColors.lightOnSecondaryContainer,
-            );
-          }
-          return const IconThemeData(color: AppColors.lightOnSurfaceVariant);
-        }),
-        height: 80,
-      ),
-
-      // Divider Theme
-      dividerTheme: const DividerThemeData(
-        color: AppColors.lightOutlineVariant,
-        thickness: 1,
-        space: 1,
-      ),
-
-      // Chip Theme
-      chipTheme: ChipThemeData(
-        backgroundColor: AppColors.lightSurfaceVariant,
-        selectedColor: AppColors.lightSecondaryContainer,
-        labelStyle: AppTypography.labelMedium,
-        padding: AppSpacing.paddingSM,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.sm),
-        ),
-      ),
-
-      // Dialog Theme
-      dialogTheme: DialogTheme(
-        backgroundColor: AppColors.lightSurface,
-        surfaceTintColor: AppColors.lightPrimary,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.lg),
-        ),
-        titleTextStyle: AppTypography.headlineSmall,
-        contentTextStyle: AppTypography.bodyMedium,
-      ),
-
-      // Snack Bar Theme
-      snackBarTheme: SnackBarThemeData(
-        backgroundColor: AppColors.lightOnSurface,
-        contentTextStyle: AppTypography.bodyMedium.copyWith(
-          color: AppColors.lightSurface,
-        ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.sm),
-        ),
-        behavior: SnackBarBehavior.floating,
       ),
     );
   }
+}
 
-  static ThemeData get darkTheme {
-    return ThemeData(
-      useMaterial3: true,
-
-      // Material Design 3 ColorScheme
-      colorScheme: AppColors.darkColorScheme,
-
-      // Material Design 3 Typography (Dark)
-      textTheme: AppTypography.darkTextTheme,
-
-      // AppBar Theme
-      appBarTheme: AppBarTheme(
-        backgroundColor: AppColors.darkSurface,
-        foregroundColor: AppColors.darkOnSurface,
-        elevation: 0,
-        centerTitle: true,
-        titleTextStyle: AppTypography.appBarTitle.copyWith(
-          color: AppColors.darkOnSurface,
-        ),
-        surfaceTintColor: Colors.transparent,
+/// 🎨 자주 사용하는 스타일들 (선택사항)
+class AppStyles {
+  // 카드 데코레이션
+  static BoxDecoration get cardDecoration => BoxDecoration(
+    color: AppColors.surface,
+    borderRadius: BorderRadius.circular(12),
+    boxShadow: const [
+      BoxShadow(
+        color: Color(0x0A000000),
+        offset: Offset(0, 2),
+        blurRadius: 8,
       ),
-
-      // Button Themes
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.darkPrimary,
-          foregroundColor: AppColors.darkOnPrimary,
-          padding: AppSpacing.symmetric(
-            horizontal: AppSpacing.lg,
-            vertical: AppSpacing.md,
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppSpacing.sm),
-          ),
-          textStyle: AppTypography.buttonText,
-          elevation: 1,
-        ),
-      ),
-
-      filledButtonTheme: FilledButtonThemeData(
-        style: FilledButton.styleFrom(
-          backgroundColor: AppColors.darkPrimary,
-          foregroundColor: AppColors.darkOnPrimary,
-          padding: AppSpacing.symmetric(
-            horizontal: AppSpacing.lg,
-            vertical: AppSpacing.md,
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppSpacing.sm),
-          ),
-          textStyle: AppTypography.buttonText,
-        ),
-      ),
-
-      outlinedButtonTheme: OutlinedButtonThemeData(
-        style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.darkPrimary,
-          padding: AppSpacing.symmetric(
-            horizontal: AppSpacing.lg,
-            vertical: AppSpacing.md,
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppSpacing.sm),
-          ),
-          side: const BorderSide(color: AppColors.darkOutline),
-          textStyle: AppTypography.buttonText,
-        ),
-      ),
-
-      textButtonTheme: TextButtonThemeData(
-        style: TextButton.styleFrom(
-          foregroundColor: AppColors.darkPrimary,
-          padding: AppSpacing.symmetric(
-            horizontal: AppSpacing.md,
-            vertical: AppSpacing.sm,
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppSpacing.sm),
-          ),
-          textStyle: AppTypography.buttonText,
-        ),
-      ),
-
-      // Input Decoration Theme
-      inputDecorationTheme: InputDecorationTheme(
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.sm),
-          borderSide: const BorderSide(color: AppColors.darkOutline),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.sm),
-          borderSide: const BorderSide(color: AppColors.darkOutline),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.sm),
-          borderSide: const BorderSide(color: AppColors.darkPrimary, width: 2),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.sm),
-          borderSide: const BorderSide(color: AppColors.darkError),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.sm),
-          borderSide: const BorderSide(color: AppColors.darkError, width: 2),
-        ),
-        contentPadding: AppSpacing.paddingMD,
-        labelStyle: AppTypography.bodyMedium.copyWith(
-          color: AppColors.darkOnSurfaceVariant,
-        ),
-        hintStyle: AppTypography.bodyMedium.copyWith(
-          color: AppColors.darkOnSurfaceVariant.withOpacity(0.6),
-        ),
-        filled: true,
-        fillColor: AppColors.darkSurfaceVariant.withOpacity(0.1),
-      ),
-
-      // Card Theme
-      cardTheme: CardTheme(
-        color: AppColors.darkSurface,
-        elevation: 1,
-        shadowColor: Colors.black.withOpacity(0.3),
-        surfaceTintColor: AppColors.darkPrimary,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.md),
-        ),
-        margin: AppSpacing.paddingSM,
-      ),
-
-      // List Tile Theme
-      listTileTheme: ListTileThemeData(
-        contentPadding: AppSpacing.paddingMD,
-        titleTextStyle: AppTypography.titleMedium.copyWith(
-          color: AppColors.darkOnSurface,
-        ),
-        subtitleTextStyle: AppTypography.bodyMedium.copyWith(
-          color: AppColors.darkOnSurfaceVariant,
-        ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.sm),
-        ),
-      ),
-
-      // Bottom Navigation Bar Theme
-      bottomNavigationBarTheme: BottomNavigationBarThemeData(
-        backgroundColor: AppColors.darkSurface,
-        selectedItemColor: AppColors.darkPrimary,
-        unselectedItemColor: AppColors.darkOnSurfaceVariant,
-        selectedLabelStyle: AppTypography.labelMedium,
-        unselectedLabelStyle: AppTypography.labelMedium,
-        type: BottomNavigationBarType.fixed,
-        elevation: 3,
-      ),
-
-      // Navigation Bar Theme (Material 3)
-      navigationBarTheme: NavigationBarThemeData(
-        backgroundColor: AppColors.darkSurface,
-        indicatorColor: AppColors.darkPrimaryContainer,
-        labelTextStyle: MaterialStateProperty.resolveWith((states) {
-          if (states.contains(MaterialState.selected)) {
-            return AppTypography.labelMedium.copyWith(
-              color: AppColors.darkOnSurface,
-            );
-          }
-          return AppTypography.labelMedium.copyWith(
-            color: AppColors.darkOnSurfaceVariant,
-          );
-        }),
-        iconTheme: MaterialStateProperty.resolveWith((states) {
-          if (states.contains(MaterialState.selected)) {
-            return const IconThemeData(
-              color: AppColors.darkOnSecondaryContainer,
-            );
-          }
-          return const IconThemeData(color: AppColors.darkOnSurfaceVariant);
-        }),
-        height: 80,
-      ),
-
-      // Divider Theme
-      dividerTheme: const DividerThemeData(
-        color: AppColors.darkOutlineVariant,
-        thickness: 1,
-        space: 1,
-      ),
-
-      // Chip Theme
-      chipTheme: ChipThemeData(
-        backgroundColor: AppColors.darkSurfaceVariant,
-        selectedColor: AppColors.darkSecondaryContainer,
-        labelStyle: AppTypography.labelMedium.copyWith(
-          color: AppColors.darkOnSurface,
-        ),
-        padding: AppSpacing.paddingSM,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.sm),
-        ),
-      ),
-
-      // Dialog Theme
-      dialogTheme: DialogTheme(
-        backgroundColor: AppColors.darkSurface,
-        surfaceTintColor: AppColors.darkPrimary,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.lg),
-        ),
-        titleTextStyle: AppTypography.headlineSmall.copyWith(
-          color: AppColors.darkOnSurface,
-        ),
-        contentTextStyle: AppTypography.bodyMedium.copyWith(
-          color: AppColors.darkOnSurface,
-        ),
-      ),
-
-      // Snack Bar Theme
-      snackBarTheme: SnackBarThemeData(
-        backgroundColor: AppColors.darkOnSurface,
-        contentTextStyle: AppTypography.bodyMedium.copyWith(
-          color: AppColors.darkSurface,
-        ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.sm),
-        ),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
-  }
+    ],
+  );
 }

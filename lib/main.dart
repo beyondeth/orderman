@@ -51,8 +51,7 @@ class OrderMarketApp extends StatelessWidget {
     return GetMaterialApp(
       title: 'Order Market App',
       theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.system,
+      themeMode: ThemeMode.light,
       initialRoute: AppRoutes.splash,
       getPages: AppPages.routes,
       debugShowCheckedModeBanner: false,
