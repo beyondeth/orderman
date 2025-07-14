@@ -397,16 +397,12 @@ class GlobalStateController extends GetxController {
 ## 🎯 향후 개발 방향
 
 ### 1. 홈 화면 개선 (진행 중)
-- "연결된 판매자" 컨테이너: 연결 탭의 UI/UX 재사용
-- "최근 주문" 컨테이너: 내역 탭의 UI/UX 재사용
 - 일관된 디자인 적용
 
 ### 2. 추가 기능 계획
 - 푸시 알림 시스템
-- 결제 시스템 연동
 - 채팅 기능
 - 분석 대시보드
-- 다국어 지원
 
 ### 3. 성능 개선
 - 이미지 최적화
@@ -429,21 +425,9 @@ class GlobalStateController extends GetxController {
 # 에뮬레이터 실행
 flutter run -d emulator-5556
 
+
 # 웹 실행
 flutter run -d web-server --web-port 8080
-
-# 빌드
-flutter build apk --release
-flutter build ios --release
-```
-
-### 환경 변수 설정
-```bash
-# .env 파일 생성 필요
-cp .env.example .env
-# 필요한 환경 변수 설정
-```
-
 ---
 
 ## 📝 코드 작성 시 주의사항

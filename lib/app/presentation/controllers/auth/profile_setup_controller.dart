@@ -111,6 +111,12 @@ class ProfileSetupController extends GetxController {
     isLoading.value = true;
 
     try {
+      print('=== 프로필 설정 시작 ===');
+      print('displayName: ${displayNameController.text.trim()}');
+      print('role: ${selectedRole.name}');
+      print('phoneNumber: ${phoneNumberController.text.trim()}');
+      print('businessName: ${businessNameController.text.trim()}');
+
       final success = await _authService.createUserProfile(
         displayName: displayNameController.text.trim(),
         role: selectedRole,
@@ -125,26 +131,49 @@ class ProfileSetupController extends GetxController {
       );
 
       if (success != null) {
-        // 프로필 생성 성공 후 역할에 따라 홈으로 이동
+        print('=== 프로필 생성 성공 - 메인 화면으로 이동 ===');
+        
+        // 성공 메시지 표시
+        Get.snackbar(
+          '프로필 설정 완료',
+          '프로필이 성공적으로 설정되었습니다.',
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+          duration: const Duration(seconds: 2),
+        );
+        
+        // 잠시 대기 후 메인 화면으로 이동
+        await Future.delayed(const Duration(milliseconds: 500));
         _navigateToHome();
+      } else {
+        print('=== 프로필 생성 실패 ===');
+        Get.snackbar(
+          '프로필 설정 실패',
+          '프로필 설정 중 오류가 발생했습니다. 다시 시도해주세요.',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
       }
     } catch (e) {
-      Get.log('Profile setup failed: $e');
+      print('=== Profile setup error: $e ===');
+      Get.snackbar(
+        '오류 발생',
+        '네트워크 연결을 확인하고 다시 시도해주세요.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
     } finally {
       isLoading.value = false;
     }
   }
 
-  // Navigate to home based on role
+  // Navigate to home - 메인 화면으로 통일
   void _navigateToHome() {
-    switch (selectedRole) {
-      case UserRole.buyer:
-        Get.offAllNamed(AppRoutes.buyerHome);
-        break;
-      case UserRole.seller:
-        Get.offAllNamed(AppRoutes.sellerHome);
-        break;
-    }
+    print('=== 메인 화면으로 이동 (역할: ${selectedRole.name}) ===');
+    Get.offAllNamed(AppRoutes.main);
   }
 
   // Get role display name

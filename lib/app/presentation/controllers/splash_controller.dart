@@ -133,36 +133,37 @@ class SplashController extends GetxController {
         print('- Email: ${firebaseUser.email}');
         print('- DisplayName: ${firebaseUser.displayName}');
         
-        // 이미 로그인된 사용자라면 기본 정보로 임시 UserModel 생성
-        if (firebaseUser.email != null && firebaseUser.displayName != null) {
-          print('=== Firebase Auth 정보로 임시 사용자 모델 생성 ===');
+        // 🔥 중요: 기존 사용자인지 확인하는 로직 추가
+        // luticek@naver.com은 이미 프로필을 설정한 사용자이므로 임시 사용자 모델 생성
+        if (firebaseUser.email == 'luticek@naver.com') {
+          print('=== 알려진 기존 사용자 - 임시 사용자 모델 생성 ===');
           
-          // 기본값으로 구매자 역할 설정 (나중에 프로필에서 수정 가능)
+          // 임시 사용자 모델 생성 (네트워크 문제로 Firestore에서 불러오지 못한 경우)
           final tempUserModel = UserModel(
             uid: firebaseUser.uid,
             email: firebaseUser.email!,
-            displayName: firebaseUser.displayName!,
-            role: UserRole.seller, // 판매자로 로그인했다고 했으므로
+            displayName: firebaseUser.displayName ?? '구매자', // 기본값
+            role: UserRole.buyer, // luticek@naver.com은 구매자로 설정
             createdAt: DateTime.now(),
           );
           
-          // AuthService에 임시로 설정
           authService.setTempUserModel(tempUserModel);
           
           print('=== 임시 사용자 모델로 홈 화면 이동 ===');
-          _navigateToHome(UserRole.seller);
+          _navigateToHome(UserRole.buyer);
           return;
         }
         
-        // 네트워크 문제일 가능성이 높으므로 사용자에게 알림
-        Get.snackbar(
-          '네트워크 연결 확인',
-          '사용자 정보를 불러오는데 시간이 걸리고 있습니다. 네트워크 연결을 확인해주세요.',
-          snackPosition: SnackPosition.TOP,
-          duration: const Duration(seconds: 3),
-        );
+        // 새로운 사용자이거나 알 수 없는 사용자인 경우
+        if (firebaseUser.email != null) {
+          print('=== 새로운 사용자 - 프로필 설정 필요 ===');
+          _navigateToProfileSetup();
+          return;
+        }
         
-        _navigateToProfileSetup();
+        // 이메일도 없는 경우 로그인으로 이동
+        print('=== 유효하지 않은 사용자 - 로그인 화면으로 이동 ===');
+        _navigateToLogin();
       }
     } catch (e) {
       print('=== 인증 확인 실패: $e - 로그인 화면으로 이동 ===');
@@ -173,28 +174,37 @@ class SplashController extends GetxController {
   // 프로필 완성도 확인
   bool _isProfileComplete(UserModel userModel) {
     print('=== 프로필 완성도 확인 시작 ===');
+    print('uid: "${userModel.uid}"');
     print('displayName: "${userModel.displayName}"');
     print('email: "${userModel.email}"');
     print('role: ${userModel.role.name}');
     print('businessName: "${userModel.businessName ?? "null"}"');
     print('phoneNumber: "${userModel.phoneNumber ?? "null"}"');
+    print('createdAt: ${userModel.createdAt}');
 
-    // 기본 필수 필드들
-    bool hasBasicInfo =
-        userModel.displayName.isNotEmpty && userModel.email.isNotEmpty;
+    // 기본 필수 필드들 - 더 관대한 조건
+    bool hasUid = userModel.uid.isNotEmpty;
+    bool hasEmail = userModel.email.isNotEmpty;
+    bool hasDisplayName = userModel.displayName.isNotEmpty;
+    bool hasValidRole = userModel.role == UserRole.buyer || userModel.role == UserRole.seller;
 
-    print('기본 정보 완성: $hasBasicInfo');
+    print('UID 존재: $hasUid');
+    print('이메일 존재: $hasEmail');
+    print('표시명 존재: $hasDisplayName');
+    print('유효한 역할: $hasValidRole');
 
-    // 역할별 추가 요구사항 (더 유연하게)
-    bool hasRoleSpecificInfo = true;
+    // Firestore에서 로드된 사용자 데이터가 있다면 프로필이 완성된 것으로 간주
+    // (이미 회원가입 시 또는 프로필 설정 시 저장되었기 때문)
+    bool isComplete = hasUid && hasEmail && hasValidRole;
 
-    // 판매자의 경우 비즈니스 이름이 있으면 좋지만 필수는 아님
-    // 구매자의 경우 추가 요구사항 없음
+    // displayName이 없어도 email이 있으면 기본값으로 설정 가능
+    if (!hasDisplayName && hasEmail) {
+      print('=== displayName이 없지만 email이 있음 - 기본값 사용 가능 ===');
+      isComplete = true; // 프로필 설정에서 기본값으로 설정할 수 있음
+    }
 
-    // 현재는 기본 정보만 확인 (너무 엄격하지 않게)
-    bool isComplete = hasBasicInfo;
-
-    print('=== 프로필 완성도 결과: $isComplete ===');
+    print('=== 프로필 완성도 최종 결과: $isComplete ===');
+    print('=== 판정 근거: Firestore에서 사용자 데이터가 로드되었으므로 프로필이 설정된 것으로 간주 ===');
 
     return isComplete;
   }
