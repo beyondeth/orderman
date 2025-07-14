@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>구매자 탭 분석 및 개선 제안</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .section:hover {
+            transform: translateY(-5px);
+        }
+        
+        .section h2 {
+            color: #2196F3;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+            border-bottom: 3px solid #2196F3;
+            padding-bottom: 10px;
+        }
+        
+        .tabs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .tab-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .tab-card:hover {
+            border-color: #2196F3;
+            box-shadow: 0 5px 15px rgba(33, 150, 243, 0.2);
+        }
+        
+        .tab-card.home { border-left: 5px solid #4CAF50; }
+        .tab-card.order { border-left: 5px solid #FF9800; }
+        .tab-card.history { border-left: 5px solid #9C27B0; }
+        .tab-card.connect { border-left: 5px solid #F44336; }
+        
+        .tab-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .tab-features {
+            list-style: none;
+        }
+        
+        .tab-features li {
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+            position: relative;
+            padding-left: 25px;
+        }
+        
+        .tab-features li:before {
+            content: "▶";
+            position: absolute;
+            left: 0;
+            color: #2196F3;
+        }
+        
+        .overlap-indicator {
+            background: #ffebee;
+            border-left: 4px solid #f44336;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        
+        .overlap-indicator:before {
+            content: "⚠️ ";
+            font-weight: bold;
+        }
+        
+        .recommendation {
+            background: linear-gradient(135deg, #e8f5e8 0%, #f0f8f0 100%);
+            border-radius: 10px;
+            padding: 25px;
+            margin: 20px 0;
+            border-left: 5px solid #4CAF50;
+        }
+        
+        .recommendation h3 {
+            color: #2e7d32;
+            margin-bottom: 15px;
+            font-size: 1.4rem;
+        }
+        
+        .pros-cons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .pros, .cons {
+            padding: 20px;
+            border-radius: 10px;
+        }
+        
+        .pros {
+            background: #e8f5e8;
+            border-left: 4px solid #4CAF50;
+        }
+        
+        .cons {
+            background: #ffebee;
+            border-left: 4px solid #f44336;
+        }
+        
+        .mermaid-container {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .improvement-flow {
+            background: linear-gradient(135deg, #fff3e0 0%, #fce4ec 100%);
+            border-radius: 15px;
+            padding: 30px;
+            margin: 30px 0;
+        }
+        
+        .flow-step {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+        
+        .flow-step h4 {
+            color: #1976D2;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+        
+        .emoji {
+            font-size: 1.5rem;
+            margin-right: 10px;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .tabs-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .pros-cons {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛒 구매자 탭 분석 및 개선 제안</h1>
+            <p>Order Market App - 사용자 경험 최적화 방안</p>
+        </div>
+
+        <!-- 현재 상황 분석 -->
+        <div class="section">
+            <h2>📊 현재 탭별 기능 분석</h2>
+            <div class="tabs-grid">
+                <div class="tab-card home">
+                    <div class="tab-title">
+                        <span class="emoji">🏠</span>홈 탭
+                    </div>
+                    <ul class="tab-features">
+                        <li>환영 메시지</li>
+                        <li class="overlap-indicator">연결된 판매자 목록 (최대 3개)</li>
+                        <li class="overlap-indicator">최근 주문 내역 (최대 3개)</li>
+                        <li>빠른 액세스 버튼들</li>
+                    </ul>
+                </div>
+                
+                <div class="tab-card order">
+                    <div class="tab-title">
+                        <span class="emoji">🛒</span>주문 탭
+                    </div>
+                    <ul class="tab-features">
+                        <li class="overlap-indicator">연결된 판매자 목록 (전체)</li>
+                        <li>판매자별 상품 목록</li>
+                        <li>주문하기 기능</li>
+                        <li>장바구니 기능</li>
+                    </ul>
+                </div>
+                
+                <div class="tab-card history">
+                    <div class="tab-title">
+                        <span class="emoji">📋</span>내역 탭
+                    </div>
+                    <ul class="tab-features">
+                        <li class="overlap-indicator">전체 주문 내역</li>
+                        <li>월별 요약 통계</li>
+                        <li>주문 상세 정보</li>
+                        <li>재주문 기능</li>
+                    </ul>
+                </div>
+                
+                <div class="tab-card connect">
+                    <div class="tab-title">
+                        <span class="emoji">👥</span>연결 탭
+                    </div>
+                    <ul class="tab-features">
+                        <li>새 판매자 연결 요청</li>
+                        <li class="overlap-indicator">연결된 판매자 목록 (전체)</li>
+                        <li>연결 상태 관리</li>
+                        <li>판매자 정보 확인</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 중복성 문제 -->
+        <div class="section">
+            <h2>⚠️ 중복성 문제점</h2>
+            <div class="mermaid-container">
+                <div class="mermaid">
+                    graph TD
+                        A[홈 탭] --> A1[연결된 판매자]
+                        A --> A2[최근 주문]
+                        
+                        B[주문 탭] --> B1[연결된 판매자]
+                        B --> B2[주문 기능]
+                        
+                        C[내역 탭] --> C1[주문 내역]
+                        C --> C2[통계]
+                        
+                        D[연결 탭] --> D1[연결된 판매자]
+                        D --> D2[새 연결]
+                        
+                        A1 -.-> B1
+                        A1 -.-> D1
+                        A2 -.-> C1
+                        
+                        style A1 fill:#ffcccc
+                        style B1 fill:#ffcccc
+                        style D1 fill:#ffcccc
+                        style A2 fill:#ccffcc
+                        style C1 fill:#ccffcc
+                </div>
+            </div>
+            
+            <div class="overlap-indicator">
+                <strong>주요 중복 요소:</strong>
+                <ul style="margin-top: 10px; margin-left: 20px;">
+                    <li><strong>연결된 판매자 목록:</strong> 홈, 주문, 연결 탭에서 중복</li>
+                    <li><strong>주문 내역:</strong> 홈, 내역 탭에서 중복</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 개선 제안 -->
+        <div class="section">
+            <h2>💡 개선 제안: 역할 명확화</h2>
+            
+            <div class="recommendation">
+                <h3>🎯 핵심 아이디어: "스마트 홈 + 전문화된 탭"</h3>
+                <p>각 탭이 명확한 목적을 가지고, 중복을 최소화하면서 사용자 경험을 향상시키는 방향</p>
+            </div>
+
+            <div class="improvement-flow">
+                <h3 style="text-align: center; margin-bottom: 30px; color: #1976D2;">🚀 개선된 탭 구조</h3>
+                
+                <div class="flow-step">
+                    <h4><span class="emoji">🏠</span>홈 - 스마트 대시보드</h4>
+                    <ul style="margin-left: 20px;">
+                        <li><strong>개인화된 추천:</strong> AI 기반 자주 주문하는 판매자 2-3개만</li>
+                        <li><strong>진행 상황:</strong> 현재 진행 중인 주문, 배송 예정</li>
+                        <li><strong>빠른 액션:</strong> 원클릭 재주문, 즐겨찾기 바로가기</li>
+                        <li><strong>알림 센터:</strong> 새로운 판매자, 할인 정보</li>
+                    </ul>
+                </div>
+                
+                <div class="flow-step">
+                    <h4><span class="emoji">🛒</span>주문 - 순수 주문 프로세스</h4>
+                    <ul style="margin-left: 20px;">
+                        <li><strong>전체 판매자:</strong> 검색, 필터, 카테고리별 정렬</li>
+                        <li><strong>상품 탐색:</strong> 판매자별 상품 목록, 비교</li>
+                        <li><strong>주문 프로세스:</strong> 장바구니, 결제, 주문 완료</li>
+                        <li><strong>추천 시스템:</strong> 유사 상품, 함께 주문한 상품</li>
+                    </ul>
+                </div>
+                
+                <div class="flow-step">
+                    <h4><span class="emoji">📊</span>내역 - 데이터 분석 & 관리</h4>
+                    <ul style="margin-left: 20px;">
+                        <li><strong>완전한 기록:</strong> 모든 주문 내역, 상세 검색</li>
+                        <li><strong>분석 도구:</strong> 지출 분석, 주문 패턴, 통계</li>
+                        <li><strong>스마트 기능:</strong> 재주문 추천, 정기 주문 설정</li>
+                        <li><strong>리뷰 관리:</strong> 평가, 후기 작성</li>
+                    </ul>
+                </div>
+                
+                <div class="flow-step">
+                    <h4><span class="emoji">👥</span>연결 - 관계 관리 전용</h4>
+                    <ul style="margin-left: 20px;">
+                        <li><strong>새로운 발견:</strong> 판매자 검색, 추천, 리뷰 확인</li>
+                        <li><strong>연결 관리:</strong> 요청 보내기, 승인 대기, 연결 해제</li>
+                        <li><strong>관계 설정:</strong> 즐겨찾기, 알림 설정, 메모</li>
+                        <li><strong>소통 기록:</strong> 문의 내역, 특별 요청 기록</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 사용자 여정 -->
+        <div class="section">
+            <h2>🎭 개선된 사용자 여정</h2>
+            <div class="mermaid-container">
+                <div class="mermaid">
+                    journey
+                        title 구매자의 하루
+                        section 아침 확인
+                            홈에서 오늘 배송 확인: 5: 구매자
+                            진행중인 주문 상태 체크: 4: 구매자
+                        section 주문 필요시
+                            주문 탭에서 상품 탐색: 4: 구매자
+                            즐겨찾는 판매자에서 주문: 5: 구매자
+                        section 주문 후
+                            내역에서 주문 확인: 4: 구매자
+                            배송 추적: 3: 구매자
+                        section 새로운 판매자 발견
+                            연결 탭에서 판매자 검색: 3: 구매자
+                            연결 요청 및 관리: 4: 구매자
+                </div>
+            </div>
+        </div>
+
+        <!-- 장단점 분석 -->
+        <div class="section">
+            <h2>⚖️ 개선안 장단점 분석</h2>
+            <div class="pros-cons">
+                <div class="pros">
+                    <h3>✅ 장점</h3>
+                    <ul>
+                        <li><strong>명확한 목적:</strong> 각 탭의 역할이 분명함</li>
+                        <li><strong>중복 제거:</strong> 불필요한 중복 기능 최소화</li>
+                        <li><strong>개인화:</strong> 사용자별 맞춤 경험</li>
+                        <li><strong>효율성:</strong> 원하는 기능을 빠르게 찾을 수 있음</li>
+                        <li><strong>확장성:</strong> 새로운 기능 추가가 용이함</li>
+                    </ul>
+                </div>
+                <div class="cons">
+                    <h3>❌ 고려사항</h3>
+                    <ul>
+                        <li><strong>학습 곡선:</strong> 기존 사용자의 적응 시간 필요</li>
+                        <li><strong>개발 복잡도:</strong> 개인화 기능 구현의 복잡성</li>
+                        <li><strong>데이터 요구:</strong> AI 추천을 위한 충분한 데이터 필요</li>
+                        <li><strong>성능:</strong> 실시간 분석 기능의 성능 최적화</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 구현 우선순위 -->
+        <div class="section">
+            <h2>🎯 구현 우선순위</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                <div style="background: #e8f5e8; padding: 20px; border-radius: 10px; border-left: 5px solid #4CAF50;">
+                    <h4>🥇 1단계 (즉시)</h4>
+                    <ul style="margin-top: 10px;">
+                        <li>중복 제거</li>
+                        <li>홈 화면 개인화</li>
+                        <li>탭별 역할 명확화</li>
+                    </ul>
+                </div>
+                <div style="background: #fff3e0; padding: 20px; border-radius: 10px; border-left: 5px solid #FF9800;">
+                    <h4>🥈 2단계 (단기)</h4>
+                    <ul style="margin-top: 10px;">
+                        <li>AI 추천 시스템</li>
+                        <li>고급 검색/필터</li>
+                        <li>분석 대시보드</li>
+                    </ul>
+                </div>
+                <div style="background: #e3f2fd; padding: 20px; border-radius: 10px; border-left: 5px solid #2196F3;">
+                    <h4>🥉 3단계 (장기)</h4>
+                    <ul style="margin-top: 10px;">
+                        <li>예측 주문</li>
+                        <li>소셜 기능</li>
+                        <li>고급 분석</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 결론 -->
+        <div class="section" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+            <h2 style="color: white; border-bottom-color: white;">🎉 결론 및 다음 단계</h2>
+            <div style="font-size: 1.1rem; line-height: 1.8;">
+                <p><strong>핵심 메시지:</strong> 각 탭이 고유한 가치를 제공하면서도 서로 보완하는 구조로 개선</p>
+                <br>
+                <p><strong>기대 효과:</strong></p>
+                <ul style="margin: 15px 0 15px 30px;">
+                    <li>사용자 만족도 향상 (직관적인 네비게이션)</li>
+                    <li>앱 사용 시간 증가 (개인화된 경험)</li>
+                    <li>주문 전환율 향상 (효율적인 주문 프로세스)</li>
+                    <li>사용자 재방문율 증가 (스마트한 추천)</li>
+                </ul>
+                <br>
+                <p style="text-align: center; font-size: 1.2rem; font-weight: bold;">
+                    🚀 사용자 중심의 직관적인 앱으로 진화! 🚀
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'default',
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true
+            }
+        });
+    </script>
+</body>
+</html>

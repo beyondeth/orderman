@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:order_market_app/app/presentation/controllers/buyer/seller_connect_controller.dart';
 
 import '../../../core/constants/app_constants.dart';
 import '../../../data/models/connection_model.dart';
@@ -90,20 +91,44 @@ class OrderTabView extends GetView<BuyerHomeController> {
     );
   }
 
+  /// 연결된 판매자 섹션 (홈 화면과 완전히 동일한 UI/UX)
   Widget _buildConnectedSellers(BuildContext context) {
+    // SellerConnectController 사용하여 홈 화면과 동일한 로직 적용
+    final connectController = Get.find<SellerConnectController>();
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          '연결된 판매자',
-          style: Theme.of(
-            context,
-          ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+        // 섹션 헤더 (홈 화면과 동일한 스타일)
+        Row(
+          children: [
+            Icon(Icons.people, color: Theme.of(context).primaryColor),
+            const SizedBox(width: 8),
+            Text(
+              '연결된 판매자',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const Spacer(),
+            // 더보기 버튼 (연결 탭으로 이동)
+            TextButton(
+              onPressed: () {
+                final mainController = Get.find<MainController>();
+                mainController.changeTab(3); // 연결 탭으로 이동
+              },
+              child: Text(
+                '더보기',
+                style: TextStyle(color: Theme.of(context).primaryColor),
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: AppConstants.defaultPadding),
 
+        // 연결된 판매자 목록 (홈 화면과 동일한 로직)
         Obx(() {
-          if (controller.isLoading.value) {
+          if (connectController.isLoadingConnections.value) {
             return const Center(
               child: Padding(
                 padding: EdgeInsets.all(AppConstants.largePadding),
@@ -112,24 +137,60 @@ class OrderTabView extends GetView<BuyerHomeController> {
             );
           }
 
-          if (controller.connections.isEmpty) {
-            return _buildEmptyState(context);
+          if (connectController.connectedSellers.isEmpty) {
+            return _buildEmptyConnectedSellersState(context);
           }
 
+          // 주문 탭에서는 모든 연결된 판매자 표시 (홈과 다른 점)
           return ListView.separated(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            itemCount: controller.connections.length,
-            separatorBuilder:
-                (context, index) =>
-                    const SizedBox(height: AppConstants.smallPadding),
+            itemCount: connectController.connectedSellers.length,
+            separatorBuilder: (context, index) => const SizedBox(height: 12),
             itemBuilder: (context, index) {
-              final connection = controller.connections[index];
+              final connection = connectController.connectedSellers[index];
               return _buildSellerCard(context, connection);
             },
           );
         }),
       ],
+    );
+  }
+
+  /// 빈 연결 상태 (홈 화면과 동일한 스타일)
+  Widget _buildEmptyConnectedSellersState(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(AppConstants.largePadding),
+        child: Column(
+          children: [
+            Icon(Icons.store_outlined, size: 64, color: Colors.grey[400]),
+            const SizedBox(height: 16),
+            Text(
+              '연결된 판매자가 없습니다',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                color: Colors.grey[600],
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              '연결 탭에서 판매자와 연결해보세요',
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Colors.grey[500],
+              ),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () {
+                final mainController = Get.find<MainController>();
+                mainController.changeTab(3); // 연결 탭으로 이동
+              },
+              child: const Text('판매자 연결하기'),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -278,7 +339,7 @@ class OrderTabView extends GetView<BuyerHomeController> {
                     icon: const Icon(Icons.shopping_cart, size: 20),
                     label: const Text('주문하기'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      backgroundColor: Theme.of(context).colorScheme.onPrimary,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(
                         horizontal: 16,
