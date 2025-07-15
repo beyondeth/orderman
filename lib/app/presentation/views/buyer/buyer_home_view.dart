@@ -44,7 +44,7 @@ class BuyerHomeView extends GetView<BuyerHomeController> {
 
             // 연결된 판매자 섹션 (연결 탭의 UI/UX 재사용)
             _buildConnectedSellersSection(context),
-            const SizedBox(height: AppConstants.largePadding * 2),
+            const SizedBox(height: AppConstants.defaultPadding),
 
             // 최근 주문 섹션 (내역 탭의 UI/UX 재사용)
             _buildRecentOrdersSection(context),
@@ -60,7 +60,7 @@ class BuyerHomeView extends GetView<BuyerHomeController> {
       final user = controller.currentUser;
       final userName = user?.displayName ?? '구매자';
       final businessName = user?.businessName;
-      
+
       return Container(
         width: double.infinity,
         padding: const EdgeInsets.all(24),
@@ -106,7 +106,9 @@ class BuyerHomeView extends GetView<BuyerHomeController> {
                       if (businessName != null && businessName.isNotEmpty) ...[
                         Text(
                           businessName,
-                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                          style: Theme.of(
+                            context,
+                          ).textTheme.headlineSmall?.copyWith(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
                           ),
@@ -114,7 +116,9 @@ class BuyerHomeView extends GetView<BuyerHomeController> {
                         const SizedBox(height: 4),
                         Text(
                           userName,
-                          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          style: Theme.of(
+                            context,
+                          ).textTheme.bodyLarge?.copyWith(
                             color: Colors.white.withValues(alpha: 0.9),
                             fontWeight: FontWeight.w500,
                           ),
@@ -123,7 +127,9 @@ class BuyerHomeView extends GetView<BuyerHomeController> {
                         // 사업체명이 없으면 이름만 표시
                         Text(
                           userName,
-                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                          style: Theme.of(
+                            context,
+                          ).textTheme.headlineSmall?.copyWith(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
                           ),
@@ -151,7 +157,7 @@ class BuyerHomeView extends GetView<BuyerHomeController> {
   Widget _buildConnectedSellersSection(BuildContext context) {
     // SellerConnectController 사용하여 기존 로직 재사용
     final connectController = Get.find<SellerConnectController>();
-    
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -201,7 +207,7 @@ class BuyerHomeView extends GetView<BuyerHomeController> {
               ],
             ),
           ),
-          
+
           // 연결된 판매자 목록
           Obx(() {
             if (connectController.isLoadingConnections.value) {
@@ -216,8 +222,9 @@ class BuyerHomeView extends GetView<BuyerHomeController> {
             }
 
             // 최대 3개만 표시 (홈 화면이므로)
-            final displaySellers = connectController.connectedSellers.take(3).toList();
-            
+            final displaySellers =
+                connectController.connectedSellers.take(3).toList();
+
             return Padding(
               padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
               child: ListView.separated(
@@ -256,9 +263,9 @@ class BuyerHomeView extends GetView<BuyerHomeController> {
           Text(
             '연결 탭에서 판매자와 연결해보세요',
             textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Colors.grey[500],
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: Colors.grey[500]),
           ),
           const SizedBox(height: 16),
           ElevatedButton(
@@ -279,7 +286,7 @@ class BuyerHomeView extends GetView<BuyerHomeController> {
   /// 판매자 카드 - 아이콘 제거된 버전 (텍스트만 유지)
   Widget _buildSellerCard(BuildContext context, dynamic connection) {
     final connectController = Get.find<SellerConnectController>();
-    
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.grey[50],
@@ -305,9 +312,14 @@ class BuyerHomeView extends GetView<BuyerHomeController> {
                   const SizedBox(width: 8),
                   // 판매자 텍스트 (아이콘 삭제)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
-                      color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+                      color: Theme.of(
+                        context,
+                      ).primaryColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
@@ -322,7 +334,10 @@ class BuyerHomeView extends GetView<BuyerHomeController> {
                   const SizedBox(width: 8),
                   // 연결됨 텍스트 (아이콘 삭제)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.green.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
@@ -339,18 +354,18 @@ class BuyerHomeView extends GetView<BuyerHomeController> {
                 ],
               ),
             ),
-            
+
             // 오른쪽: 주문하기 버튼
             ElevatedButton(
               onPressed: () => connectController.goToOrder(connection),
               style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 minimumSize: const Size(60, 32),
               ),
-              child: const Text(
-                '주문하기',
-                style: TextStyle(fontSize: 12),
-              ),
+              child: const Text('주문하기', style: TextStyle(fontSize: 12)),
             ),
           ],
         ),
@@ -362,7 +377,7 @@ class BuyerHomeView extends GetView<BuyerHomeController> {
   Widget _buildRecentOrdersSection(BuildContext context) {
     // OrderHistoryController 사용하여 기존 로직 재사용
     final historyController = Get.find<OrderHistoryController>();
-    
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -428,7 +443,7 @@ class BuyerHomeView extends GetView<BuyerHomeController> {
 
             // 최대 3개만 표시 (홈 화면이므로)
             final recentOrders = historyController.orders.take(3).toList();
-            
+
             return Padding(
               padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
               child: ListView.separated(
@@ -454,11 +469,7 @@ class BuyerHomeView extends GetView<BuyerHomeController> {
       padding: const EdgeInsets.all(24),
       child: Column(
         children: [
-          Icon(
-            Icons.receipt_long_outlined,
-            size: 48,
-            color: Colors.grey[400],
-          ),
+          Icon(Icons.receipt_long_outlined, size: 48, color: Colors.grey[400]),
           const SizedBox(height: 12),
           Text(
             '주문 내역이 없습니다',
@@ -470,9 +481,9 @@ class BuyerHomeView extends GetView<BuyerHomeController> {
           const SizedBox(height: 6),
           Text(
             '첫 주문을 시작해보세요!',
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Colors.grey[500],
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: Colors.grey[500]),
           ),
           const SizedBox(height: 16),
           ElevatedButton(
@@ -525,9 +536,14 @@ class BuyerHomeView extends GetView<BuyerHomeController> {
                   const SizedBox(width: 8),
                   // 판매자 텍스트 (아이콘 삭제)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
-                      color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+                      color: Theme.of(
+                        context,
+                      ).primaryColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
@@ -542,7 +558,10 @@ class BuyerHomeView extends GetView<BuyerHomeController> {
                   const SizedBox(width: 8),
                   // 주문 상태 텍스트 (아이콘 삭제)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
                       color: order.status.color.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
@@ -564,10 +583,7 @@ class BuyerHomeView extends GetView<BuyerHomeController> {
                 children: [
                   Text(
                     DateFormat('yyyy-MM-dd HH:mm').format(order.orderDate),
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.grey[600],
-                    ),
+                    style: TextStyle(fontSize: 13, color: Colors.grey[600]),
                   ),
                   const Spacer(),
                   Text(
@@ -589,9 +605,9 @@ class BuyerHomeView extends GetView<BuyerHomeController> {
               children: [
                 Text(
                   '주문 상품',
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 8),
                 // 주문 상품 목록
