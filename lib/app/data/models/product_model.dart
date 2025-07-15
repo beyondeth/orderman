@@ -5,7 +5,7 @@ class ProductModel {
   final String sellerId;
   final String name;
   final String unit;
-  final int? price;
+  final int price;
   final bool isActive;
   final int orderIndex;
   final DateTime createdAt;
@@ -16,7 +16,7 @@ class ProductModel {
     required this.sellerId,
     required this.name,
     required this.unit,
-    this.price,
+    this.price = 0,
     this.isActive = true,
     this.orderIndex = 0,
     required this.createdAt,
@@ -33,7 +33,7 @@ class ProductModel {
         sellerId: data['sellerId'] as String,
         name: data['name'] as String,
         unit: data['unit'] as String,
-        price: data['price'] as int?,
+        price: (data['price'] as int?) ?? 0,
         isActive: data['isActive'] as bool? ?? true,
         orderIndex: data['orderIndex'] as int? ?? 0,
         createdAt: (data['createdAt'] as Timestamp).toDate(),
@@ -55,7 +55,7 @@ class ProductModel {
       sellerId: map['sellerId'] as String,
       name: map['name'] as String,
       unit: map['unit'] as String,
-      price: map['price'] as int?,
+      price: (map['price'] as int?) ?? 0,
       isActive: map['isActive'] as bool? ?? true,
       orderIndex: map['orderIndex'] as int? ?? 0,
       createdAt: map['createdAt'] is Timestamp 

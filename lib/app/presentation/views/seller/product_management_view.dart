@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../../core/constants/app_constants.dart';
-import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_theme.dart';
+import '../../../core/theme/toss_design_system.dart';
 import '../../../data/models/product_model.dart';
 import '../../controllers/seller/product_management_controller.dart';
 
@@ -12,397 +10,273 @@ class ProductManagementView extends GetView<ProductManagementController> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(20),
-      child: Column(
+    return Scaffold(
+      backgroundColor: TossDesignSystem.background,
+      appBar: AppBar(
+        title: Text(
+          '상품 관리',
+          style: TossDesignSystem.heading4,
+        ),
+        backgroundColor: TossDesignSystem.background,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: false,
+        actions: [
+          TossWidgets.iconButton(
+            icon: Icons.refresh_rounded,
+            onPressed: controller.refreshProducts,
+            backgroundColor: Colors.transparent,
+          ),
+          const SizedBox(width: TossDesignSystem.spacing12),
+        ],
+      ),
+      body: Column(
         children: [
-          // 헤더 섹션
-          _buildHeader(context),
-          const SizedBox(height: AppTheme.large),
-          
-          // 상품 통계
-          _buildProductStats(),
-          const SizedBox(height: AppTheme.large),
+          // 상품 추가 버튼
+          Padding(
+            padding: const EdgeInsets.all(TossDesignSystem.spacing20),
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => _showProductDialog(),
+                style: TossDesignSystem.primaryButton,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.add_rounded, size: 20),
+                    const SizedBox(width: TossDesignSystem.spacing8),
+                    Text(
+                      '새 상품 추가',
+                      style: TossDesignSystem.button.copyWith(
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
           
           // 상품 목록
           Expanded(
-            child: _buildProductList(),
+            child: Obx(() {
+              if (controller.isLoading.value) {
+                return const Center(
+                  child: CircularProgressIndicator(
+                    color: TossDesignSystem.primary,
+                  ),
+                );
+              }
+
+              if (controller.products.isEmpty) {
+                return _buildEmptyState();
+              }
+
+              return ListView.separated(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: TossDesignSystem.spacing20,
+                ),
+                itemCount: controller.products.length,
+                separatorBuilder: (context, index) => 
+                    const SizedBox(height: TossDesignSystem.spacing12),
+                itemBuilder: (context, index) {
+                  final product = controller.products[index];
+                  return _buildProductCard(product);
+                },
+              );
+            }),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+  /// 빈 상태
+  Widget _buildEmptyState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(TossDesignSystem.spacing40),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-              '상품 관리',
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                color: TossDesignSystem.gray100,
+                borderRadius: BorderRadius.circular(TossDesignSystem.radius20),
+              ),
+              child: const Icon(
+                Icons.inventory_2_outlined,
+                size: 40,
+                color: TossDesignSystem.gray400,
               ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: TossDesignSystem.spacing24),
             Text(
-              '판매할 상품을 관리하세요',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: AppColors.textSecondary,
+              '등록된 상품이 없어요',
+              style: TossDesignSystem.heading4.copyWith(
+                color: TossDesignSystem.textSecondary,
+              ),
+            ),
+            const SizedBox(height: TossDesignSystem.spacing8),
+            Text(
+              '첫 번째 상품을 등록해보세요',
+              style: TossDesignSystem.body2.copyWith(
+                color: TossDesignSystem.textTertiary,
+              ),
+            ),
+            const SizedBox(height: TossDesignSystem.spacing32),
+            ElevatedButton(
+              onPressed: () => _showProductDialog(),
+              style: TossDesignSystem.primaryButton,
+              child: Text(
+                '상품 등록하기',
+                style: TossDesignSystem.button.copyWith(
+                  color: Colors.white,
+                ),
               ),
             ),
           ],
         ),
-        Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [AppColors.primary, AppColors.primaryDark],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(8),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.primary.withOpacity(0.3),
-                offset: const Offset(0, 4),
-                blurRadius: 12,
-              ),
-            ],
-          ),
-          child: ElevatedButton.icon(
-            onPressed: () => _showProductDialog(),
-            icon: const Icon(Icons.add_rounded, size: 20),
-            label: const Text('상품 추가'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.transparent,
-              shadowColor: Colors.transparent,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildProductStats() {
-    return Obx(() => Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x0A000000),
-            offset: Offset(0, 2),
-            blurRadius: 8,
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: _buildStatItem(
-              '전체 상품',
-              controller.products.length.toString(),
-              Icons.inventory_2_rounded,
-              AppColors.primary,
-            ),
-          ),
-          Container(
-            width: 1,
-            height: 40,
-            color: AppColors.textHint.withOpacity(0.3),
-          ),
-          Expanded(
-            child: _buildStatItem(
-              '활성 상품',
-              controller.products.where((p) => p.isActive).length.toString(),
-              Icons.check_circle_rounded,
-              Colors.green,
-            ),
-          ),
-          Container(
-            width: 1,
-            height: 40,
-            color: AppColors.textHint.withOpacity(0.3),
-          ),
-          Expanded(
-            child: _buildStatItem(
-              '비활성 상품',
-              controller.products.where((p) => !p.isActive).length.toString(),
-              Icons.pause_circle_rounded,
-              Colors.orange,
-            ),
-          ),
-        ],
-      ),
-    ));
-  }
-
-  Widget _buildStatItem(String title, String value, IconData icon, Color color) {
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Icon(icon, color: color, size: 20),
-        ),
-        const SizedBox(height: AppTheme.small),
-        Text(
-          value,
-          style: Get.textTheme.headlineSmall?.copyWith(
-            color: color,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          title,
-          style: Get.textTheme.bodySmall?.copyWith(
-            color: AppColors.textSecondary,
-            fontWeight: FontWeight.w500,
-          ),
-          textAlign: TextAlign.center,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildProductList() {
-    return Obx(() {
-      if (controller.isLoading.value) {
-        return _buildLoadingState();
-      }
-
-      if (controller.products.isEmpty) {
-        return _buildEmptyState();
-      }
-
-      return ListView.separated(
-        padding: const EdgeInsets.only(top: 8),
-        itemCount: controller.products.length,
-        separatorBuilder: (context, index) => const SizedBox(height: 12),
-        itemBuilder: (context, index) {
-          final product = controller.products[index];
-          return _buildProductItem(product);
-        },
-      );
-    });
-  }
-
-  Widget _buildLoadingState() {
-    return Container(
-      padding: const EdgeInsets.all(40),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x0A000000),
-            offset: Offset(0, 2),
-            blurRadius: 8,
-          ),
-        ],
-      ),
-      child: const Center(
-        child: CircularProgressIndicator(),
       ),
     );
   }
 
-  Widget _buildEmptyState() {
-    return Container(
-      padding: const EdgeInsets.all(40),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x0A000000),
-            offset: Offset(0, 2),
-            blurRadius: 8,
-          ),
-        ],
-      ),
+  /// 상품 카드
+  Widget _buildProductCard(ProductModel product) {
+    return TossWidgets.card(
+      padding: const EdgeInsets.all(TossDesignSystem.spacing20),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: AppColors.background,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Icon(
-              Icons.inventory_2_outlined,
-              size: 64,
-              color: AppColors.textSecondary,
-            ),
-          ),
-          const SizedBox(height: AppTheme.large),
-          Text(
-            '등록된 상품이 없습니다',
-            style: Get.textTheme.titleLarge?.copyWith(
-              color: AppColors.textPrimary,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: AppTheme.small),
-          Text(
-            '+ 버튼을 눌러 첫 상품을 등록해보세요',
-            style: Get.textTheme.bodyMedium?.copyWith(
-              color: AppColors.textSecondary,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildProductItem(ProductModel product) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x0A000000),
-            offset: Offset(0, 2),
-            blurRadius: 8,
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          // 상태 아이콘
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: product.isActive 
-                  ? Colors.green.withOpacity(0.1)
-                  : Colors.grey.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(
-              product.isActive ? Icons.check_circle_rounded : Icons.pause_circle_rounded,
-              color: product.isActive ? Colors.green : Colors.grey,
-              size: 24,
-            ),
-          ),
-          const SizedBox(width: AppTheme.medium),
-          
-          // 상품 정보
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  product.name,
-                  style: Get.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: product.isActive 
-                        ? AppColors.textPrimary
-                        : AppColors.textSecondary,
-                  ),
-                ),
-                const SizedBox(height: AppTheme.small),
-                Row(
+          // 상품 정보 헤더
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // 단위 태그
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
+                    Text(
+                      product.name,
+                      style: TossDesignSystem.body1.copyWith(
+                        fontWeight: FontWeight.w600,
                       ),
-                      child: Text(
-                        product.unit,
-                        style: Get.textTheme.bodySmall?.copyWith(
-                          color: AppColors.primary,
-                          fontWeight: FontWeight.w600,
+                    ),
+                    const SizedBox(height: TossDesignSystem.spacing4),
+                    if (product.unit.isNotEmpty) ...[
+                      Text(
+                        '단위: ${product.unit}',
+                        style: TossDesignSystem.caption.copyWith(
+                          color: TossDesignSystem.textSecondary,
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    
-                    // 가격
-                    Text(
-                      product.price != null 
-                          ? '${product.price.toString().replaceAllMapped(
-                              RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-                              (Match m) => '${m[1]},',
-                            )}원'
-                          : '가격 미정',
-                      style: Get.textTheme.titleSmall?.copyWith(
-                        color: product.price != null 
-                            ? AppColors.primary
-                            : AppColors.textSecondary,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                    ],
                   ],
                 ),
-              ],
-            ),
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  TossWidgets.statusBadge(
+                    text: product.isActive ? '판매중' : '판매중지',
+                    color: product.isActive 
+                        ? TossDesignSystem.success 
+                        : TossDesignSystem.gray500,
+                  ),
+                  const SizedBox(height: TossDesignSystem.spacing4),
+                  Text(
+                    '${_formatPrice(product.price)}원',
+                    style: TossDesignSystem.body1.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: TossDesignSystem.primary,
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
           
-          // 액션 버튼
-          PopupMenuButton<String>(
-            onSelected: (value) => _handleProductAction(value, product),
-            icon: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: AppColors.background,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Icon(
-                Icons.more_vert_rounded,
-                color: AppColors.textSecondary,
-                size: 20,
-              ),
-            ),
-            itemBuilder: (context) => [
-              PopupMenuItem(
-                value: 'edit',
-                child: Row(
-                  children: [
-                    Icon(Icons.edit_rounded, size: 20, color: AppColors.textSecondary),
-                    const SizedBox(width: 12),
-                    const Text('수정'),
-                  ],
-                ),
-              ),
-              PopupMenuItem(
-                value: 'toggle',
-                child: Row(
-                  children: [
-                    Icon(
-                      product.isActive ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                      size: 20,
-                      color: AppColors.textSecondary,
+          const SizedBox(height: TossDesignSystem.spacing16),
+          
+          // 액션 버튼들
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => _showProductDialog(product: product),
+                  style: TossDesignSystem.outlineButton.copyWith(
+                    padding: MaterialStateProperty.all(
+                      const EdgeInsets.symmetric(
+                        vertical: TossDesignSystem.spacing12,
+                      ),
                     ),
-                    const SizedBox(width: 12),
-                    Text(product.isActive ? '비활성화' : '활성화'),
-                  ],
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.edit_outlined, size: 16),
+                      const SizedBox(width: TossDesignSystem.spacing4),
+                      Text(
+                        '수정',
+                        style: TossDesignSystem.caption.copyWith(
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-              PopupMenuItem(
-                value: 'delete',
-                child: Row(
-                  children: [
-                    const Icon(Icons.delete_rounded, size: 20, color: Colors.red),
-                    const SizedBox(width: 12),
-                    const Text('삭제', style: TextStyle(color: Colors.red)),
-                  ],
+              const SizedBox(width: TossDesignSystem.spacing8),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () => controller.toggleProductStatus(
+                    product.id, 
+                    !product.isActive,
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: product.isActive 
+                        ? TossDesignSystem.gray100 
+                        : TossDesignSystem.success,
+                    foregroundColor: product.isActive 
+                        ? TossDesignSystem.textPrimary 
+                        : Colors.white,
+                    elevation: 0,
+                    shadowColor: Colors.transparent,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(TossDesignSystem.radius12),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: TossDesignSystem.spacing12,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        product.isActive 
+                            ? Icons.pause_circle_outline 
+                            : Icons.play_circle_outline,
+                        size: 16,
+                      ),
+                      const SizedBox(width: TossDesignSystem.spacing4),
+                      Text(
+                        product.isActive ? '중지' : '판매',
+                        style: TossDesignSystem.caption.copyWith(
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
+              ),
+              const SizedBox(width: TossDesignSystem.spacing8),
+              TossWidgets.iconButton(
+                icon: Icons.delete_outline_rounded,
+                onPressed: () => _showDeleteConfirmDialog(product),
+                backgroundColor: TossDesignSystem.error.withOpacity(0.1),
+                iconColor: TossDesignSystem.error,
+                size: 36,
               ),
             ],
           ),
@@ -411,20 +285,7 @@ class ProductManagementView extends GetView<ProductManagementController> {
     );
   }
 
-  void _handleProductAction(String action, ProductModel product) {
-    switch (action) {
-      case 'edit':
-        _showProductDialog(product: product);
-        break;
-      case 'toggle':
-        controller.toggleProductStatus(product.id, !product.isActive);
-        break;
-      case 'delete':
-        _showDeleteConfirmDialog(product);
-        break;
-    }
-  }
-
+  /// 상품 추가/수정 다이얼로그
   void _showProductDialog({ProductModel? product}) {
     final isEdit = product != null;
     final nameController = TextEditingController(text: product?.name ?? '');
@@ -435,153 +296,259 @@ class ProductManagementView extends GetView<ProductManagementController> {
     final formKey = GlobalKey<FormState>();
 
     Get.dialog(
-      AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        backgroundColor: AppColors.surface,
-        title: Text(
-          isEdit ? '상품 수정' : '상품 추가',
-          style: Get.textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.bold,
-            color: AppColors.textPrimary,
-          ),
+      Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(TossDesignSystem.radius20),
         ),
-        content: Form(
-          key: formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextFormField(
-                controller: nameController,
-                decoration: const InputDecoration(
-                  labelText: '상품명',
-                  hintText: '상품명을 입력하세요',
+        backgroundColor: TossDesignSystem.surface,
+        child: Padding(
+          padding: const EdgeInsets.all(TossDesignSystem.spacing24),
+          child: Form(
+            key: formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // 다이얼로그 헤더
+                Row(
+                  children: [
+                    Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: TossDesignSystem.primary.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(TossDesignSystem.radius8),
+                      ),
+                      child: Icon(
+                        isEdit ? Icons.edit_rounded : Icons.add_rounded,
+                        color: TossDesignSystem.primary,
+                        size: 18,
+                      ),
+                    ),
+                    const SizedBox(width: TossDesignSystem.spacing12),
+                    Text(
+                      isEdit ? '상품 수정' : '상품 추가',
+                      style: TossDesignSystem.heading4,
+                    ),
+                  ],
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return '상품명을 입력해주세요';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: AppTheme.medium),
-              TextFormField(
-                controller: unitController,
-                decoration: const InputDecoration(
-                  labelText: '단위 (선택사항)',
-                  hintText: '예: kg, 개, 박스',
-                ),
-                // validator 제거 - 단위는 선택사항으로 변경
-              ),
-              const SizedBox(height: AppTheme.medium),
-              TextFormField(
-                controller: priceController,
-                decoration: const InputDecoration(
-                  labelText: '가격',
-                  hintText: '가격을 입력하세요',
-                  suffixText: '원',
-                ),
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value != null && value.isNotEmpty) {
-                    if (int.tryParse(value) == null) {
-                      return '올바른 숫자를 입력해주세요';
+                const SizedBox(height: TossDesignSystem.spacing24),
+                
+                // 상품명 입력
+                TextFormField(
+                  controller: nameController,
+                  decoration: TossDesignSystem.inputDecoration(
+                    labelText: '상품명',
+                    hintText: '상품명을 입력하세요',
+                  ),
+                  style: TossDesignSystem.body1,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return '상품명을 입력해주세요';
                     }
-                  }
-                  return null;
-                },
-              ),
-            ],
+                    return null;
+                  },
+                ),
+                const SizedBox(height: TossDesignSystem.spacing16),
+                
+                // 단위 입력 (선택사항)
+                TextFormField(
+                  controller: unitController,
+                  decoration: TossDesignSystem.inputDecoration(
+                    labelText: '단위 (선택사항)',
+                    hintText: '예: kg, 개, 박스',
+                  ),
+                  style: TossDesignSystem.body1,
+                ),
+                const SizedBox(height: TossDesignSystem.spacing16),
+                
+                // 가격 입력
+                TextFormField(
+                  controller: priceController,
+                  decoration: TossDesignSystem.inputDecoration(
+                    labelText: '가격',
+                    hintText: '가격을 입력하세요',
+                    suffixIcon: Padding(
+                      padding: const EdgeInsets.only(right: TossDesignSystem.spacing16),
+                      child: Center(
+                        widthFactor: 0.0,
+                        child: Text(
+                          '원',
+                          style: TossDesignSystem.body2.copyWith(
+                            color: TossDesignSystem.textSecondary,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  style: TossDesignSystem.body1,
+                  keyboardType: TextInputType.number,
+                  validator: (value) {
+                    if (value != null && value.isNotEmpty) {
+                      if (int.tryParse(value) == null) {
+                        return '올바른 숫자를 입력해주세요';
+                      }
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: TossDesignSystem.spacing32),
+                
+                // 액션 버튼들
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Get.back(),
+                        style: TossDesignSystem.outlineButton,
+                        child: Text(
+                          '취소',
+                          style: TossDesignSystem.button.copyWith(
+                            color: TossDesignSystem.textPrimary,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: TossDesignSystem.spacing12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          if (formKey.currentState!.validate()) {
+                            final name = nameController.text.trim();
+                            final unit = unitController.text.trim();
+                            final priceText = priceController.text.trim();
+                            final price = priceText.isNotEmpty 
+                                ? int.tryParse(priceText) ?? 0 
+                                : 0;
+
+                            if (isEdit) {
+                              controller.updateProductWithParams(
+                                product!.id,
+                                name,
+                                unit,
+                                price,
+                              );
+                            } else {
+                              controller.addProductWithParams(name, unit, price);
+                            }
+                            Get.back();
+                          }
+                        },
+                        style: TossDesignSystem.primaryButton,
+                        child: Text(
+                          isEdit ? '수정' : '추가',
+                          style: TossDesignSystem.button.copyWith(
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: Text(
-              '취소',
-              style: TextStyle(color: AppColors.textSecondary),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              if (formKey.currentState!.validate()) {
-                if (isEdit) {
-                  // 기존 상품 수정
-                  final updatedProduct = product!.copyWith(
-                    name: nameController.text.trim(),
-                    unit: unitController.text.trim(),
-                    price: priceController.text.isNotEmpty 
-                        ? int.parse(priceController.text) 
-                        : null,
-                    updatedAt: DateTime.now(),
-                  );
-                  controller.updateProduct(updatedProduct);
-                } else {
-                  // 새 상품 추가
-                  final newProduct = ProductModel(
-                    id: '', // Firestore에서 자동 생성
-                    name: nameController.text.trim(),
-                    unit: unitController.text.trim(),
-                    price: priceController.text.isNotEmpty 
-                        ? int.parse(priceController.text) 
-                        : null,
-                    sellerId: '', // Controller에서 설정
-                    isActive: true,
-                    orderIndex: 0, // Controller에서 설정
-                    createdAt: DateTime.now(),
-                  );
-                  controller.addProduct(newProduct);
-                }
-                Get.back();
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-            ),
-            child: Text(isEdit ? '수정' : '추가'),
-          ),
-        ],
       ),
     );
   }
 
+  /// 삭제 확인 다이얼로그
   void _showDeleteConfirmDialog(ProductModel product) {
     Get.dialog(
-      AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        backgroundColor: AppColors.surface,
-        title: Text(
-          '상품 삭제',
-          style: Get.textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.bold,
-            color: AppColors.textPrimary,
+      Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(TossDesignSystem.radius20),
+        ),
+        backgroundColor: TossDesignSystem.surface,
+        child: Padding(
+          padding: const EdgeInsets.all(TossDesignSystem.spacing24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  color: TossDesignSystem.error.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(TossDesignSystem.radius16),
+                ),
+                child: const Icon(
+                  Icons.delete_outline_rounded,
+                  size: 32,
+                  color: TossDesignSystem.error,
+                ),
+              ),
+              const SizedBox(height: TossDesignSystem.spacing20),
+              Text(
+                '상품을 삭제하시겠어요?',
+                style: TossDesignSystem.heading4,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: TossDesignSystem.spacing8),
+              Text(
+                '${product.name}\n삭제된 상품은 복구할 수 없어요',
+                style: TossDesignSystem.body2.copyWith(
+                  color: TossDesignSystem.textSecondary,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: TossDesignSystem.spacing32),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Get.back(),
+                      style: TossDesignSystem.outlineButton,
+                      child: Text(
+                        '취소',
+                        style: TossDesignSystem.button.copyWith(
+                          color: TossDesignSystem.textPrimary,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: TossDesignSystem.spacing12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        controller.deleteProduct(product.id);
+                        Get.back();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: TossDesignSystem.error,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shadowColor: Colors.transparent,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(TossDesignSystem.radius12),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: TossDesignSystem.spacing20,
+                          vertical: TossDesignSystem.spacing16,
+                        ),
+                      ),
+                      child: Text(
+                        '삭제',
+                        style: TossDesignSystem.button.copyWith(
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
-        content: Text(
-          '${product.name}을(를) 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.',
-          style: Get.textTheme.bodyMedium?.copyWith(
-            color: AppColors.textSecondary,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: Text(
-              '취소',
-              style: TextStyle(color: AppColors.textSecondary),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              controller.deleteProduct(product.id);
-              Get.back();
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.error,
-            ),
-            child: const Text('삭제'),
-          ),
-        ],
       ),
+    );
+  }
+
+  String _formatPrice(int price) {
+    return price.toString().replaceAllMapped(
+      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+      (Match m) => '${m[1]},',
     );
   }
 }

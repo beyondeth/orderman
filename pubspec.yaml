@@ -29,6 +29,7 @@ dependencies:
   # Utils
   intl: ^0.18.1
   uuid: ^4.5.1
+  table_calendar: ^3.0.9
   
   # Environment Variables
   flutter_dotenv: ^5.1.0

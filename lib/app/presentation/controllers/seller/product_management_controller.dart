@@ -167,6 +167,22 @@ class ProductManagementController extends GetxController {
     }
   }
 
+  // 개별 파라미터를 받는 addProduct 메서드 추가
+  Future<void> addProductWithParams(String name, String unit, int price) async {
+    final product = ProductModel(
+      id: '', // Firestore에서 자동 생성
+      sellerId: '', // 메서드 내에서 설정
+      name: name,
+      unit: unit,
+      price: price,
+      isActive: true,
+      orderIndex: 0, // 메서드 내에서 설정
+      createdAt: DateTime.now(),
+    );
+    
+    await addProduct(product);
+  }
+
   Future<void> updateProduct(ProductModel product) async {
     isUpdatingProduct.value = true;
     
@@ -228,6 +244,28 @@ class ProductManagementController extends GetxController {
     } finally {
       isUpdatingProduct.value = false;
     }
+  }
+
+  // 개별 파라미터를 받는 updateProduct 메서드 추가
+  Future<void> updateProductWithParams(String productId, String name, String unit, int price) async {
+    // 기존 상품 찾기
+    final existingProduct = products.firstWhereOrNull((p) => p.id == productId);
+    if (existingProduct == null) {
+      Get.snackbar(
+        '상품을 찾을 수 없음',
+        '수정할 상품을 찾을 수 없습니다.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+    
+    final updatedProduct = existingProduct.copyWith(
+      name: name,
+      unit: unit,
+      price: price,
+    );
+    
+    await updateProduct(updatedProduct);
   }
 
   Future<void> deleteProduct(String productId) async {
