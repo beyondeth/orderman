@@ -15,24 +15,31 @@ class SellerHomeController extends GetxController {
   final RxInt totalOrdersToday = 0.obs;
   final RxInt totalAmountToday = 0.obs;
 
+  // 주문 상태별 카운트
+  final RxInt pendingOrdersCount = 0.obs;
+  final RxInt approvedOrdersCount = 0.obs;
+  final RxInt completedOrdersCount = 0.obs;
+
   // Getters
   UserModel? get currentUser {
     if (Get.isRegistered<AuthService>()) {
       final user = Get.find<AuthService>().userModel;
-      print('=== SellerHomeController - Current User: ${user?.displayName} ===');
+      print(
+        '=== SellerHomeController - Current User: ${user?.displayName} ===',
+      );
       print('=== SellerHomeController - User Role: ${user?.role} ===');
       return user;
     }
     print('=== SellerHomeController - AuthService not registered ===');
     return null;
   }
-  
+
   String get userName {
     final name = currentUser?.displayName ?? '판매자';
     print('=== SellerHomeController - User Name: $name ===');
     return name;
   }
-  
+
   String get businessName {
     final business = currentUser?.businessName ?? '';
     print('=== SellerHomeController - Business Name: $business ===');
@@ -50,28 +57,48 @@ class SellerHomeController extends GetxController {
     if (currentUser == null) return;
 
     isLoading.value = true;
-    
+
     try {
       // Listen to today's orders stream
-      _orderService.getTodaySellerOrders(currentUser!.uid).listen(
-        (orderList) {
-          todayOrders.value = orderList;
-          totalOrdersToday.value = orderList.length;
-          totalAmountToday.value = orderList.fold<int>(
-            0, 
-            (sum, order) => sum + order.totalAmount,
+      _orderService
+          .getTodaySellerOrders(currentUser!.uid)
+          .listen(
+            (orderList) {
+              todayOrders.value = orderList;
+              totalOrdersToday.value = orderList.length;
+              totalAmountToday.value = orderList.fold<int>(
+                0,
+                (sum, order) => sum + order.totalAmount,
+              );
+
+              // 주문 상태별 카운트 계산
+              pendingOrdersCount.value =
+                  orderList
+                      .where((order) => order.status == OrderStatus.pending)
+                      .length;
+              approvedOrdersCount.value =
+                  orderList
+                      .where((order) => order.status == OrderStatus.confirmed)
+                      .length;
+              completedOrdersCount.value =
+                  orderList
+                      .where((order) => order.status == OrderStatus.completed)
+                      .length;
+
+              Get.log('Today orders loaded: ${orderList.length}');
+              Get.log(
+                'Pending: ${pendingOrdersCount.value}, Approved: ${approvedOrdersCount.value}, Completed: ${completedOrdersCount.value}',
+              );
+            },
+            onError: (error) {
+              Get.log('Failed to load today orders: $error');
+              Get.snackbar(
+                '주문 로딩 실패',
+                '오늘의 주문 정보를 불러오는데 실패했습니다.',
+                snackPosition: SnackPosition.BOTTOM,
+              );
+            },
           );
-          Get.log('Today orders loaded: ${orderList.length}');
-        },
-        onError: (error) {
-          Get.log('Failed to load today orders: $error');
-          Get.snackbar(
-            '주문 로딩 실패',
-            '오늘의 주문 정보를 불러오는데 실패했습니다.',
-            snackPosition: SnackPosition.BOTTOM,
-          );
-        },
-      );
     } catch (e) {
       Get.log('Error loading today orders: $e');
     } finally {
@@ -146,10 +173,7 @@ class SellerHomeController extends GetxController {
   void goToOrderDetail(OrderModel order) {
     print('=== goToOrderDetail called for order: ${order.id} ===');
     try {
-      Get.toNamed(
-        AppRoutes.orderDetail,
-        arguments: {'order': order},
-      );
+      Get.toNamed(AppRoutes.orderDetail, arguments: {'order': order});
       print('=== Navigation to ${AppRoutes.orderDetail} completed ===');
     } catch (e) {
       print('=== Navigation error: $e ===');

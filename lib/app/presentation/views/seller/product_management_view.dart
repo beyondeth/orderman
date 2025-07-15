@@ -467,15 +467,10 @@ class ProductManagementView extends GetView<ProductManagementController> {
               TextFormField(
                 controller: unitController,
                 decoration: const InputDecoration(
-                  labelText: '단위',
+                  labelText: '단위 (선택사항)',
                   hintText: '예: kg, 개, 박스',
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return '단위를 입력해주세요';
-                  }
-                  return null;
-                },
+                // validator 제거 - 단위는 선택사항으로 변경
               ),
               const SizedBox(height: AppTheme.medium),
               TextFormField(

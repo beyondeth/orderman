@@ -12,6 +12,11 @@ class SellerHomeView extends GetView<SellerHomeController> {
 
   @override
   Widget build(BuildContext context) {
+    // 컨트롤러가 등록되지 않은 경우 등록
+    if (!Get.isRegistered<SellerHomeController>()) {
+      Get.put(SellerHomeController());
+    }
+    
     return RefreshIndicator(
       onRefresh: controller.refreshData,
       child: SingleChildScrollView(
@@ -349,33 +354,33 @@ class SellerHomeView extends GetView<SellerHomeController> {
         Row(
           children: [
             Expanded(
-              child: _buildStatusCard(
+              child: Obx(() => _buildStatusCard(
                 context,
                 '신규 주문',
-                0,
+                controller.pendingOrdersCount.value,
                 Colors.orange,
                 Icons.new_releases_rounded,
-              ),
+              )),
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: _buildStatusCard(
+              child: Obx(() => _buildStatusCard(
                 context,
                 '처리 중',
-                0,
+                controller.approvedOrdersCount.value,
                 Colors.blue,
                 Icons.pending_rounded,
-              ),
+              )),
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: _buildStatusCard(
+              child: Obx(() => _buildStatusCard(
                 context,
                 '완료',
-                0,
+                controller.completedOrdersCount.value,
                 Colors.green,
                 Icons.done_all_rounded,
-              ),
+              )),
             ),
           ],
         ),

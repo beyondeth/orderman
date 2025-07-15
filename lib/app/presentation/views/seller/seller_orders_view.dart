@@ -11,6 +11,11 @@ class SellerOrdersView extends GetView<SellerOrdersController> {
 
   @override
   Widget build(BuildContext context) {
+    // 컨트롤러가 등록되지 않은 경우 등록
+    if (!Get.isRegistered<SellerOrdersController>()) {
+      Get.put(SellerOrdersController());
+    }
+    
     return Scaffold(
       appBar: AppBar(
         title: const Text('주문 관리'),
