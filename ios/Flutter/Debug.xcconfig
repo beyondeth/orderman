@@ -15,3 +15,7 @@ SWIFT_COMPILATION_MODE = singlefile
 
 // 병렬 빌드 최적화
 SWIFT_WHOLE_MODULE_OPTIMIZATION = NO
+
+// 🔧 Swift Sendable 경고 해결 (Xcode 16.4 호환)
+SWIFT_STRICT_CONCURRENCY = minimal
+OTHER_SWIFT_FLAGS = $(inherited) -Xfrontend -disable-availability-checking

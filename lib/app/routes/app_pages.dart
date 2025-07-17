@@ -14,6 +14,7 @@ import '../presentation/views/seller/seller_home_view.dart';
 import '../presentation/views/seller/product_management_view.dart';
 import '../presentation/views/seller/seller_orders_view.dart';
 import '../presentation/views/seller/connection_requests_view.dart';
+import '../presentation/views/seller/order_detail_view.dart';
 import '../presentation/views/profile/profile_view.dart';
 import '../presentation/views/main/main_view.dart'; // 정리된 main_view
 
@@ -168,6 +169,12 @@ class AppPages {
       binding: BindingsBuilder(() {
         Get.lazyPut<SellerOrdersController>(() => SellerOrdersController());
       }),
+    ),
+
+    // Order Detail
+    GetPage(
+      name: AppRoutes.orderDetail,
+      page: () => const OrderDetailView(),
     ),
   ];
 }

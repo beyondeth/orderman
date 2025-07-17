@@ -3,3 +3,7 @@
 
 // 🚀 릴리즈 빌드 최적화 (필요시)
 ENABLE_BITCODE = NO
+
+// 🔧 Swift Sendable 경고 해결 (Xcode 16.4 호환)
+SWIFT_STRICT_CONCURRENCY = minimal
+OTHER_SWIFT_FLAGS = $(inherited) -Xfrontend -disable-availability-checking

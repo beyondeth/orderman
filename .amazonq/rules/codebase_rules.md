@@ -424,7 +424,7 @@ class GlobalStateController extends GetxController {
 ```bash
 # 에뮬레이터 실행
 flutter run -d emulator-5556
-
+d
 
 # 웹 실행
 flutter run -d web-server --web-port 8080

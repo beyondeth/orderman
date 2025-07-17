@@ -2,9 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 enum OrderStatus {
-  pending('대기중', Colors.orange, Icons.hourglass_empty),
-  confirmed('확인됨', Colors.blue, Icons.check_circle),
-  completed('완료', Colors.green, Icons.done_all),
+  pending('신규', Colors.orange, Icons.hourglass_empty),
+  confirmed('주문확인', Colors.blue, Icons.check_circle),
+  completed('배송완료', Colors.green, Icons.done_all),
   cancelled('취소됨', Colors.red, Icons.cancel);
 
   const OrderStatus(this.displayText, this.color, this.icon);

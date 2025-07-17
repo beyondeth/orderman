@@ -13,11 +13,11 @@ dependencies:
   # State Management
   get: ^4.7.2
   
-  # Firebase - 최신 버전
+  # Firebase - 최신 버전 (iOS 18 호환성 개선)
   firebase_core: ^3.15.0
   firebase_auth: ^5.6.1
   cloud_firestore: ^5.6.10
-  firebase_storage: ^12.4.8
+  # firebase_storage: ^12.4.8  # 임시 주석 처리 - Swift 6.0 Sendable 오류
   
   # Local Storage
   shared_preferences: ^2.5.2

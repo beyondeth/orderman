@@ -264,19 +264,19 @@ class SellerHomeView extends GetView<SellerHomeController> {
             const SizedBox(width: TossDesignSystem.spacing12),
             Expanded(
               child: Obx(() => _buildStatusCard(
-                '처리 중',
+                '주문확인',
                 controller.approvedOrdersCount.value,
                 TossDesignSystem.info,
-                Icons.schedule_rounded,
+                Icons.assignment_turned_in_rounded,
               )),
             ),
             const SizedBox(width: TossDesignSystem.spacing12),
             Expanded(
               child: Obx(() => _buildStatusCard(
-                '완료',
+                '배송완료',
                 controller.completedOrdersCount.value,
                 TossDesignSystem.success,
-                Icons.check_circle_rounded,
+                Icons.local_shipping_rounded,
               )),
             ),
           ],
@@ -532,9 +532,9 @@ class SellerHomeView extends GetView<SellerHomeController> {
       case 'OrderStatus.pending':
         return '신규';
       case 'OrderStatus.confirmed':
-        return '처리중';
+        return '주문확인';
       case 'OrderStatus.completed':
-        return '완료';
+        return '배송완료';
       case 'OrderStatus.cancelled':
         return '거절';
       default:

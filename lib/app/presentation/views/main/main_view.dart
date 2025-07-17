@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
 import '../../../core/theme/app_colors.dart';
 import '../../controllers/main_controller.dart';
 import '../../controllers/buyer/buyer_home_controller.dart';
@@ -190,7 +189,13 @@ class MainView extends GetView<MainController> {
     Get.lazyPut(() => OrderHistoryController());
     Get.lazyPut(() => SellerConnectController());
     Get.lazyPut(() => ProductManagementController());
-    Get.lazyPut(() => SellerOrdersController());
+    
+    // SellerOrdersController를 즉시 등록 (주문탭에서 바로 사용하기 위해)
+    if (!Get.isRegistered<SellerOrdersController>()) {
+      Get.put(SellerOrdersController());
+      print('=== SellerOrdersController 등록 완료 ===');
+    }
+    
     Get.lazyPut(() => ConnectionRequestsController());
 
     print('=== MainView: 모든 컨트롤러 등록 완료 ===');

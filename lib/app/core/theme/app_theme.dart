@@ -88,7 +88,7 @@ class AppTheme {
       ),
       
       // 🃏 카드 테마
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: AppColors.surface,
         elevation: 2,
         shape: RoundedRectangleBorder(

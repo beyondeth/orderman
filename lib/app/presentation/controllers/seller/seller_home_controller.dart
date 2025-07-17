@@ -64,6 +64,14 @@ class SellerHomeController extends GetxController {
           .getTodaySellerOrders(currentUser!.uid)
           .listen(
             (orderList) {
+              Get.log('=== SellerHomeController - Orders Received ===');
+              Get.log('Total orders: ${orderList.length}');
+              
+              // 각 주문의 상태 로그
+              for (var order in orderList) {
+                Get.log('Order ${order.id}: ${order.status.name} (${order.status.displayText}) - ${order.buyerName}');
+              }
+              
               todayOrders.value = orderList;
               totalOrdersToday.value = orderList.length;
               totalAmountToday.value = orderList.fold<int>(
@@ -72,23 +80,20 @@ class SellerHomeController extends GetxController {
               );
 
               // 주문 상태별 카운트 계산
-              pendingOrdersCount.value =
-                  orderList
-                      .where((order) => order.status == OrderStatus.pending)
-                      .length;
-              approvedOrdersCount.value =
-                  orderList
-                      .where((order) => order.status == OrderStatus.confirmed)
-                      .length;
-              completedOrdersCount.value =
-                  orderList
-                      .where((order) => order.status == OrderStatus.completed)
-                      .length;
+              final pendingOrders = orderList.where((order) => order.status == OrderStatus.pending).toList();
+              final confirmedOrders = orderList.where((order) => order.status == OrderStatus.confirmed).toList();
+              final completedOrders = orderList.where((order) => order.status == OrderStatus.completed).toList();
+              
+              pendingOrdersCount.value = pendingOrders.length;
+              approvedOrdersCount.value = confirmedOrders.length;
+              completedOrdersCount.value = completedOrders.length;
 
-              Get.log('Today orders loaded: ${orderList.length}');
-              Get.log(
-                'Pending: ${pendingOrdersCount.value}, Approved: ${approvedOrdersCount.value}, Completed: ${completedOrdersCount.value}',
-              );
+              Get.log('=== SellerHomeController - Status Counts ===');
+              Get.log('Pending (신규): ${pendingOrdersCount.value}');
+              Get.log('Confirmed (주문확인): ${approvedOrdersCount.value}');
+              Get.log('Completed (배송완료): ${completedOrdersCount.value}');
+              Get.log('Total Amount: ${totalAmountToday.value}');
+              Get.log('=== End Status Counts ===');
             },
             onError: (error) {
               Get.log('Failed to load today orders: $error');

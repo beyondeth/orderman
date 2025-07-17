@@ -15,6 +15,7 @@ class SellerOrdersView extends GetView<SellerOrdersController> {
     // 컨트롤러가 등록되지 않은 경우 등록
     if (!Get.isRegistered<SellerOrdersController>()) {
       Get.put(SellerOrdersController());
+      print('=== SellerOrdersView: SellerOrdersController 등록 완료 ===');
     }
     
     return Scaffold(
@@ -120,7 +121,7 @@ class SellerOrdersView extends GetView<SellerOrdersController> {
                 Expanded(
                   child: _buildSummaryItem(
                     '신규 주문',
-                    controller.todayPendingCount.value,
+                    controller.filteredPendingCount.value,
                     TossDesignSystem.warning,
                   ),
                 ),
@@ -132,8 +133,8 @@ class SellerOrdersView extends GetView<SellerOrdersController> {
                 const SizedBox(width: TossDesignSystem.spacing16),
                 Expanded(
                   child: _buildSummaryItem(
-                    '처리 중',
-                    controller.todayApprovedCount.value,
+                    '주문확인',
+                    controller.filteredApprovedCount.value,
                     TossDesignSystem.info,
                   ),
                 ),
@@ -145,8 +146,8 @@ class SellerOrdersView extends GetView<SellerOrdersController> {
                 const SizedBox(width: TossDesignSystem.spacing16),
                 Expanded(
                   child: _buildSummaryItem(
-                    '완료',
-                    controller.todayCompletedCount.value,
+                    '배송완료',
+                    controller.filteredCompletedCount.value,
                     TossDesignSystem.success,
                   ),
                 ),
@@ -455,10 +456,10 @@ class SellerOrdersView extends GetView<SellerOrdersController> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.check_circle_rounded, size: 16),
+                const Icon(Icons.local_shipping_rounded, size: 16),
                 const SizedBox(width: TossDesignSystem.spacing8),
                 Text(
-                  '완료 처리',
+                  '배송완료',
                   style: TossDesignSystem.button.copyWith(
                     color: Colors.white,
                   ),
@@ -482,13 +483,13 @@ class SellerOrdersView extends GetView<SellerOrdersController> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Icon(
-                Icons.check_circle_rounded,
+                Icons.local_shipping_rounded,
                 color: TossDesignSystem.success,
                 size: 16,
               ),
               const SizedBox(width: TossDesignSystem.spacing8),
               Text(
-                '처리 완료',
+                '배송완료',
                 style: TossDesignSystem.body2.copyWith(
                   color: TossDesignSystem.success,
                   fontWeight: FontWeight.w600,
@@ -627,9 +628,9 @@ class SellerOrdersView extends GetView<SellerOrdersController> {
       case OrderStatus.pending:
         return '신규';
       case OrderStatus.confirmed:
-        return '처리중';
+        return '주문확인';
       case OrderStatus.completed:
-        return '완료';
+        return '배송완료';
       case OrderStatus.cancelled:
         return '거절';
     }

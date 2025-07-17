@@ -1,7 +1,16 @@
 import 'package:get/get.dart';
+import 'package:firebase_core/firebase_core.dart';
+
+import '../../../firebase_options.dart';
 import '../../routes/app_routes.dart';
 import '../../core/services/auth_service.dart';
+import '../../core/services/env_service.dart';
 import '../../data/models/user_model.dart';
+import '../../core/services/firebase_service.dart';
+import '../../core/services/connection_service.dart';
+import '../../core/services/product_service.dart';
+import '../../core/services/order_service.dart';
+import '../../core/state/global_state_controller.dart';
 
 enum SplashStep { init, dataLoad, authCheck, complete }
 
@@ -47,17 +56,55 @@ class SplashController extends GetxController {
   }
 
   void _loadData() async {
-    print('=== 데이터 로딩 시작 ===');
+    print('=== 데이터 로딩 및 서비스 초기화 시작 ===');
 
     try {
-      // 최소 스플래시 시간 보장 (2초)
-      await Future.delayed(const Duration(seconds: 2));
+      // 최소 스플래시 시간과 서비스 초기화를 동시에 진행
+      final future1 = Future.delayed(const Duration(seconds: 2));
+      final future2 = _initializeServices();
 
-      print('=== 데이터 로딩 완료 ===');
+      // 두 작업이 모두 끝날 때까지 대기
+      await Future.wait([future1, future2]);
+
+      print('=== 데이터 로딩 및 서비스 초기화 완료 ===');
       changeStep(SplashStep.authCheck);
     } catch (e) {
-      print('=== 데이터 로딩 실패: $e ===');
-      changeStep(SplashStep.authCheck); // 실패해도 다음 단계로
+      print('=== 데이터 로딩 또는 서비스 초기화 실패: $e ===');
+      // 실패 시에도 다음 단계로 넘어가서 인증 상태에 따라 처리
+      changeStep(SplashStep.authCheck);
+    }
+  }
+
+  // 서비스 초기화 로직을 별도 메서드로 분리
+  Future<void> _initializeServices() async {
+    try {
+      // 환경변수 초기화
+      await EnvService.initialize();
+      print('=== ✅ 환경변수 초기화 완료 ===');
+      
+      // 환경 정보 출력 (디버그 모드에서만)
+      EnvService.printEnvironmentInfo();
+      
+      // Firebase 초기화
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+      print('=== ✅ Firebase 초기화 성공 ===');
+
+      // Firebase 초기화 후 서비스 종속성 주입
+      print('=== 서비스 종속성 주입 시작 ===');
+      Get.put(FirebaseService(), permanent: true);
+      Get.put(AuthService(), permanent: true);
+      Get.put(ConnectionService(), permanent: true);
+      Get.put(ProductService(), permanent: true);
+      Get.put(OrderService(), permanent: true);
+      Get.put(GlobalStateController(), permanent: true);
+      print('=== ✅ 모든 서비스 등록 완료 ===');
+    } catch (e, stackTrace) {
+      print('=== ❌ 서비스 초기화 오류: $e ===');
+      print('=== Stack trace: $stackTrace ===');
+      // 오류를 다시 던져서 _loadData에서 잡도록 함
+      rethrow;
     }
   }
 

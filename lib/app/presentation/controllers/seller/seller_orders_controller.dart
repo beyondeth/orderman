@@ -31,7 +31,13 @@ class SellerOrdersController extends GetxController {
   final Rx<DateTime?> customStartDate = Rx<DateTime?>(null);
   final Rx<DateTime?> customEndDate = Rx<DateTime?>(null);
   
-  // 상태별 카운트
+  // 상태별 카운트 (필터된 주문 기준)
+  final RxInt filteredPendingCount = 0.obs;
+  final RxInt filteredApprovedCount = 0.obs;
+  final RxInt filteredCompletedCount = 0.obs;
+  final RxInt filteredTotalAmount = 0.obs;
+  
+  // 오늘 주문 기준 카운트 (기존 유지)
   final RxInt todayPendingCount = 0.obs;
   final RxInt todayApprovedCount = 0.obs;
   final RxInt todayCompletedCount = 0.obs;
@@ -57,7 +63,12 @@ class SellerOrdersController extends GetxController {
     // Listen to today orders changes to calculate total and counts
     ever(todayOrders, (_) {
       _calculateTodayTotal();
-      _calculateStatusCounts();
+      _calculateTodayStatusCounts();
+    });
+    
+    // Listen to filtered orders changes to calculate filtered counts
+    ever(filteredOrders, (_) {
+      _calculateFilteredStatusCounts();
     });
     
     // Listen to all orders changes to apply filter
@@ -67,6 +78,9 @@ class SellerOrdersController extends GetxController {
     ever(currentFilter, (_) => _applyCurrentFilter());
     ever(customStartDate, (_) => _applyCurrentFilter());
     ever(customEndDate, (_) => _applyCurrentFilter());
+    
+    // 초기 필터 적용 (오늘 기준)
+    _applyCurrentFilter();
   }
 
   Future<void> _loadOrders() async {
@@ -133,12 +147,61 @@ class SellerOrdersController extends GetxController {
     Get.log('Today total amount calculated: $total');
   }
 
-  void _calculateStatusCounts() {
-    todayPendingCount.value = todayOrders.where((order) => order.status == OrderStatus.pending).length;
-    todayApprovedCount.value = todayOrders.where((order) => order.status == OrderStatus.confirmed).length;
-    todayCompletedCount.value = todayOrders.where((order) => order.status == OrderStatus.completed).length;
+  void _calculateTodayStatusCounts() {
+    // 디버깅을 위한 상세 로그
+    Get.log('=== Calculating Today Status Counts ===');
+    Get.log('Total today orders: ${todayOrders.length}');
     
-    Get.log('Status counts - Pending: ${todayPendingCount.value}, Confirmed: ${todayApprovedCount.value}, Completed: ${todayCompletedCount.value}');
+    // 각 주문의 상태 로그
+    for (var order in todayOrders) {
+      Get.log('Today Order ${order.id}: ${order.status.name} (${order.status.displayText})');
+    }
+    
+    // 상태별 카운트 계산
+    final pendingOrders = todayOrders.where((order) => order.status == OrderStatus.pending).toList();
+    final confirmedOrders = todayOrders.where((order) => order.status == OrderStatus.confirmed).toList();
+    final completedOrders = todayOrders.where((order) => order.status == OrderStatus.completed).toList();
+    
+    todayPendingCount.value = pendingOrders.length;
+    todayApprovedCount.value = confirmedOrders.length;
+    todayCompletedCount.value = completedOrders.length;
+    
+    Get.log('=== Today Status Counts Result ===');
+    Get.log('Pending (신규): ${todayPendingCount.value}');
+    Get.log('Confirmed (주문확인): ${todayApprovedCount.value}');
+    Get.log('Completed (배송완료): ${todayCompletedCount.value}');
+    Get.log('=== End Today Status Counts ===');
+  }
+
+  void _calculateFilteredStatusCounts() {
+    // 디버깅을 위한 상세 로그
+    Get.log('=== Calculating Filtered Status Counts ===');
+    Get.log('Total filtered orders: ${filteredOrders.length}');
+    Get.log('Current filter: ${currentFilter.value.displayText}');
+    
+    // 각 주문의 상태 로그
+    for (var order in filteredOrders) {
+      Get.log('Filtered Order ${order.id}: ${order.status.name} (${order.status.displayText})');
+    }
+    
+    // 상태별 카운트 계산
+    final pendingOrders = filteredOrders.where((order) => order.status == OrderStatus.pending).toList();
+    final confirmedOrders = filteredOrders.where((order) => order.status == OrderStatus.confirmed).toList();
+    final completedOrders = filteredOrders.where((order) => order.status == OrderStatus.completed).toList();
+    
+    filteredPendingCount.value = pendingOrders.length;
+    filteredApprovedCount.value = confirmedOrders.length;
+    filteredCompletedCount.value = completedOrders.length;
+    
+    // 필터된 주문의 총 금액 계산
+    filteredTotalAmount.value = filteredOrders.fold<int>(0, (sum, order) => sum + order.totalAmount);
+    
+    Get.log('=== Filtered Status Counts Result ===');
+    Get.log('Pending (신규): ${filteredPendingCount.value}');
+    Get.log('Confirmed (주문확인): ${filteredApprovedCount.value}');
+    Get.log('Completed (배송완료): ${filteredCompletedCount.value}');
+    Get.log('Total Amount: ${filteredTotalAmount.value}');
+    Get.log('=== End Filtered Status Counts ===');
   }
 
   // 전체 주문 기준 카운트 (필요시 사용)
@@ -224,6 +287,8 @@ class SellerOrdersController extends GetxController {
     // 최신 순으로 정렬
     filtered.sort((a, b) => b.orderDate.compareTo(a.orderDate));
     filteredOrders.assignAll(filtered);
+    
+    // 필터된 주문의 상태별 카운트 계산 (자동으로 ever 리스너가 호출됨)
     
     Get.log('Filter applied: ${currentFilter.value.displayText}, Orders: ${filtered.length}');
   }

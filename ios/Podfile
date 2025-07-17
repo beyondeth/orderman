@@ -1,5 +1,5 @@
 # Uncomment this line to define a global platform for your project
-platform :ios, '13.0'
+platform :ios, '15.0'
 
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
@@ -41,27 +41,10 @@ end
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
-    
     target.build_configurations.each do |config|
-      # iOS 최소 버전 설정
-      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.0'
-      
-      # Swift 버전을 안정적인 버전으로 설정
-      config.build_settings['SWIFT_VERSION'] = '5.0'
-      
-      # Firebase Swift 컴파일 오류 해결을 위한 설정
-      config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= [
-        '$(inherited)',
-        'PERMISSION_CAMERA=1',
-        'PERMISSION_PHOTOS=1',
-      ]
-      
-      # Swift 컴파일러 최적화 설정
-      config.build_settings['SWIFT_OPTIMIZATION_LEVEL'] = '-Onone'
-      config.build_settings['ENABLE_BITCODE'] = 'NO'
-      
-      # Firebase 관련 Swift 오류 해결
-      config.build_settings['OTHER_SWIFT_FLAGS'] = '$(inherited) -Xfrontend -warn-long-expression-type-checking=100'
+      # Sendable 경고를 해결하기 위한 핵심 설정입니다.
+      # 모든 Pod에 대해 Swift 동시성 검사 수준을 'minimal'로 설정합니다.
+      config.build_settings['SWIFT_STRICT_CONCURRENCY'] = 'minimal'
     end
   end
 end
