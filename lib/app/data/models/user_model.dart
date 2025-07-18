@@ -2,6 +2,24 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 enum UserRole { buyer, seller }
 
+sealed class UserState {}
+
+class UserInitial extends UserState {}
+
+class UserLoading extends UserState {}
+
+class UserLoaded extends UserState {
+  final UserModel user;
+  UserLoaded(this.user);
+}
+
+class UserNew extends UserState {}
+
+class UserError extends UserState {
+  final String message;
+  UserError(this.message);
+}
+
 class UserModel {
   final String uid;
   final String email;

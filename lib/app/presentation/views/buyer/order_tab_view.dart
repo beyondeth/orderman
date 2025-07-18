@@ -7,6 +7,7 @@ import '../../../data/models/connection_model.dart';
 import '../../../data/models/product_model.dart';
 import '../../controllers/buyer/buyer_home_controller.dart';
 import '../../controllers/main_controller.dart';
+import '../common/quantity_input_field.dart';
 
 class OrderTabView extends GetView<BuyerHomeController> {
   const OrderTabView({super.key});
@@ -501,34 +502,18 @@ class OrderTabView extends GetView<BuyerHomeController> {
         ),
         trailing:
             isSelected
-                ? Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      onPressed: () => controller.decreaseQuantity(product.id),
-                      icon: const Icon(Icons.remove_circle_outline),
-                      constraints: const BoxConstraints(
-                        minWidth: 32,
-                        minHeight: 32,
-                      ),
-                    ),
-                    Text(
-                      quantity.toString(),
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () => controller.increaseQuantity(product.id),
-                      icon: const Icon(Icons.add_circle_outline),
-                      constraints: const BoxConstraints(
-                        minWidth: 32,
-                        minHeight: 32,
-                      ),
-                    ),
-                  ],
-                )
+                ? QuantityControlButtons(
+                    productId: product.id,
+                    quantity: quantity,
+                    onChanged: (productId, newQuantity) {
+                      if (newQuantity > 0) {
+                        // 직접 selectProduct 메서드 호출
+                        controller.selectProduct(productId, newQuantity);
+                      } else {
+                        controller.toggleProductSelection(productId);
+                      }
+                    },
+                  )
                 : null,
       );
     });

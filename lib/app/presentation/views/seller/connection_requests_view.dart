@@ -32,13 +32,13 @@ class ConnectionRequestsView extends GetView<ConnectionRequestsController> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 헤더 정보
+              // 헤더 정보 (구매자 연결 관리 문구 삭제)
               _buildHeader(context),
               
               const SizedBox(height: AppConstants.largePadding),
               
-              // 연결 요청 목록
-              _buildRequestsList(context),
+              // 연결 요청 목록 섹션
+              _buildRequestsSection(context),
             ],
           ),
         ),
@@ -46,9 +46,10 @@ class ConnectionRequestsView extends GetView<ConnectionRequestsController> {
     );
   }
 
+  /// 헤더 정보 - 간소화된 버전
   Widget _buildHeader(BuildContext context) {
     return Card(
-      elevation: 1,
+      elevation: 2,
       child: Padding(
         padding: const EdgeInsets.all(AppConstants.defaultPadding),
         child: Row(
@@ -85,11 +86,40 @@ class ConnectionRequestsView extends GetView<ConnectionRequestsController> {
     );
   }
 
+  /// 연결 요청 목록 섹션 - 중앙 정렬 적용
+  Widget _buildRequestsSection(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(Icons.notifications_active, color: Theme.of(context).primaryColor),
+            const SizedBox(width: 8),
+            Text(
+              '대기 중인 요청',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+        
+        const SizedBox(height: AppConstants.defaultPadding),
+        
+        _buildRequestsList(context),
+      ],
+    );
+  }
+
+  /// 연결 요청 목록 - 중앙 정렬 적용
   Widget _buildRequestsList(BuildContext context) {
     return Obx(() {
       if (controller.isLoading.value) {
         return const Center(
-          child: CircularProgressIndicator(),
+          child: Padding(
+            padding: EdgeInsets.all(AppConstants.largePadding),
+            child: CircularProgressIndicator(),
+          ),
         );
       }
 
@@ -110,34 +140,38 @@ class ConnectionRequestsView extends GetView<ConnectionRequestsController> {
     });
   }
 
+  /// 빈 상태 - 중앙 정렬 적용
   Widget _buildEmptyState(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(AppConstants.largePadding * 2),
-        child: Column(
-          children: [
-            Icon(
-              Icons.inbox_outlined,
-              size: 80,
-              color: Colors.grey[400],
-            ),
-            const SizedBox(height: 24),
-            Text(
-              '연결 요청이 없습니다',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: Colors.grey[600],
-                fontWeight: FontWeight.bold,
+    return Center(
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(AppConstants.largePadding * 2),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.inbox_outlined,
+                size: 80,
+                color: Colors.grey[400],
               ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              '구매자들이 연결 요청을 보내면\n여기에 표시됩니다.',
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Colors.grey[500],
+              const SizedBox(height: 24),
+              Text(
+                '연결 요청이 없습니다',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: Colors.grey[600],
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ),
-          ],
+              const SizedBox(height: 8),
+              Text(
+                '구매자들이 연결 요청을 보내면\n여기에 표시됩니다.',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Colors.grey[500],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -224,6 +258,27 @@ class ConnectionRequestsView extends GetView<ConnectionRequestsController> {
               ],
             ),
             
+            if (request.buyerBusinessName != null && request.buyerBusinessName!.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Icon(
+                    Icons.business,
+                    size: 16,
+                    color: Colors.grey[500],
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    '사업체명: ${request.buyerBusinessName}',
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+            
             const SizedBox(height: 16),
             
             // 액션 버튼들
@@ -237,6 +292,7 @@ class ConnectionRequestsView extends GetView<ConnectionRequestsController> {
                     style: OutlinedButton.styleFrom(
                       foregroundColor: Colors.red,
                       side: const BorderSide(color: Colors.red),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
                   ),
                 ),
@@ -249,6 +305,7 @@ class ConnectionRequestsView extends GetView<ConnectionRequestsController> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green,
                       foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
                   ),
                 ),

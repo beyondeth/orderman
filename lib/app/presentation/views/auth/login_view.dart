@@ -139,8 +139,16 @@ class LoginView extends GetView<LoginController> {
   Widget _buildLoginButton() {
     return Obx(
       () => ElevatedButton(
-        onPressed:
-            controller.isLoading.value ? null : controller.loginWithEmail,
+        onPressed: controller.isLoading.value ? null : () {
+          // 버튼 클릭 시 즉시 시각적 피드백 제공
+          FocusScope.of(Get.context!).unfocus(); // 키보드 닫기
+          controller.loginWithEmail();
+        },
+        style: ElevatedButton.styleFrom(
+          disabledBackgroundColor: Theme.of(Get.context!).colorScheme.primary.withOpacity(0.6),
+          disabledForegroundColor: Colors.white70,
+          padding: const EdgeInsets.symmetric(vertical: 16),
+        ),
         child:
             controller.isLoading.value
                 ? const SizedBox(
@@ -151,7 +159,7 @@ class LoginView extends GetView<LoginController> {
                     valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                   ),
                 )
-                : const Text('로그인'),
+                : const Text('로그인', style: TextStyle(fontSize: 16)),
       ),
     );
   }
@@ -179,8 +187,15 @@ class LoginView extends GetView<LoginController> {
   Widget _buildGoogleLoginButton() {
     return Obx(
       () => OutlinedButton.icon(
-        onPressed:
-            controller.isLoading.value ? null : controller.loginWithGoogle,
+        onPressed: controller.isLoading.value ? null : () {
+          FocusScope.of(Get.context!).unfocus(); // 키보드 닫기
+          controller.loginWithGoogle();
+        },
+        style: OutlinedButton.styleFrom(
+          disabledBackgroundColor: Colors.grey.withOpacity(0.1),
+          disabledForegroundColor: Colors.grey,
+          padding: const EdgeInsets.symmetric(vertical: 16),
+        ),
         icon:
             controller.isLoading.value
                 ? const SizedBox(
@@ -189,7 +204,7 @@ class LoginView extends GetView<LoginController> {
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
                 : const Icon(Icons.g_mobiledata, size: 24),
-        label: const Text('Google로 로그인'),
+        label: const Text('Google로 로그인', style: TextStyle(fontSize: 16)),
       ),
     );
   }

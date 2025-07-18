@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -14,11 +15,15 @@ class LoginController extends GetxController {
   // Reactive variables
   final RxBool isLoading = false.obs;
   final RxBool obscurePassword = true.obs;
+  
+  // 디바운스 타이머
+  Timer? _loginDebounce;
 
   @override
   void onClose() {
     emailController.dispose();
     passwordController.dispose();
+    _loginDebounce?.cancel();
     super.onClose();
   }
 
@@ -46,11 +51,25 @@ class LoginController extends GetxController {
     return null;
   }
 
-  // Email login
-  Future<void> loginWithEmail() async {
+  // Email login with debounce
+  void loginWithEmail() {
+    // 이미 로딩 중이면 중복 호출 방지
+    if (isLoading.value) return;
+    
+    // 폼 검증
     if (!formKey.currentState!.validate()) return;
-
+    
+    // 디바운스 처리
+    _loginDebounce?.cancel();
+    _loginDebounce = Timer(const Duration(milliseconds: 300), () {
+      _performLogin();
+    });
+  }
+  
+  // 실제 로그인 수행
+  Future<void> _performLogin() async {
     isLoading.value = true;
+    print('=== 로그인 시작: ${emailController.text.trim()} ===');
 
     try {
       if (Get.isRegistered<AuthService>()) {
@@ -62,9 +81,13 @@ class LoginController extends GetxController {
         );
 
         if (userCredential != null) {
+          print('=== 로그인 성공: ${userCredential.displayName} ===');
           _navigateToHome(userCredential);
+        } else {
+          print('=== 로그인 실패: 사용자 정보 없음 ===');
         }
       } else {
+        print('=== 로그인 실패: AuthService 미등록 ===');
         Get.snackbar(
           '서비스 오류',
           'AuthService가 초기화되지 않았습니다.',
@@ -72,14 +95,27 @@ class LoginController extends GetxController {
         );
       }
     } catch (e) {
+      print('=== 로그인 오류: $e ===');
       Get.log('Email login failed: $e');
     } finally {
       isLoading.value = false;
     }
   }
 
-  // Google login
-  Future<void> loginWithGoogle() async {
+  // Google login with debounce
+  void loginWithGoogle() {
+    // 이미 로딩 중이면 중복 호출 방지
+    if (isLoading.value) return;
+    
+    // 디바운스 처리
+    _loginDebounce?.cancel();
+    _loginDebounce = Timer(const Duration(milliseconds: 300), () {
+      _performGoogleLogin();
+    });
+  }
+  
+  // 실제 Google 로그인 수행
+  Future<void> _performGoogleLogin() async {
     isLoading.value = true;
 
     try {

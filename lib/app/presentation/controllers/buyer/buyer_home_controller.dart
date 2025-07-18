@@ -347,6 +347,17 @@ class BuyerHomeController extends GetxController {
       productQuantities.remove(productId);
     }
   }
+  
+  // 특정 수량으로 직접 설정
+  void selectProduct(String productId, int quantity) {
+    if (quantity > 0) {
+      selectedProducts[productId] = true;
+      productQuantities[productId] = quantity;
+    } else {
+      selectedProducts[productId] = false;
+      productQuantities.remove(productId);
+    }
+  }
 
   // 선택된 상품이 있는지 확인
   bool hasSelectedProducts(String sellerId) {

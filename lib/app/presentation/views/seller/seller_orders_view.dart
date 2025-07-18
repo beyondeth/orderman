@@ -17,14 +17,11 @@ class SellerOrdersView extends GetView<SellerOrdersController> {
       Get.put(SellerOrdersController());
       print('=== SellerOrdersView: SellerOrdersController 등록 완료 ===');
     }
-    
+
     return Scaffold(
       backgroundColor: TossDesignSystem.background,
       appBar: AppBar(
-        title: Text(
-          '주문 관리',
-          style: TossDesignSystem.heading4,
-        ),
+        title: Text('주문 관리', style: TossDesignSystem.heading4),
         backgroundColor: TossDesignSystem.background,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
@@ -42,7 +39,7 @@ class SellerOrdersView extends GetView<SellerOrdersController> {
         children: [
           // 오늘의 주문 요약
           _buildTodaySummary(),
-          
+
           // 주문 목록
           Expanded(
             child: Obx(() {
@@ -61,8 +58,9 @@ class SellerOrdersView extends GetView<SellerOrdersController> {
               return ListView.separated(
                 padding: const EdgeInsets.all(TossDesignSystem.spacing20),
                 itemCount: controller.orders.length,
-                separatorBuilder: (context, index) => 
-                    const SizedBox(height: TossDesignSystem.spacing16),
+                separatorBuilder:
+                    (context, index) =>
+                        const SizedBox(height: TossDesignSystem.spacing16),
                 itemBuilder: (context, index) {
                   final order = controller.orders[index];
                   return _buildOrderCard(order);
@@ -90,7 +88,9 @@ class SellerOrdersView extends GetView<SellerOrdersController> {
                   height: 32,
                   decoration: BoxDecoration(
                     color: TossDesignSystem.primary.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(TossDesignSystem.radius8),
+                    borderRadius: BorderRadius.circular(
+                      TossDesignSystem.radius8,
+                    ),
                   ),
                   child: const Icon(
                     Icons.today_rounded,
@@ -100,10 +100,12 @@ class SellerOrdersView extends GetView<SellerOrdersController> {
                 ),
                 const SizedBox(width: TossDesignSystem.spacing12),
                 Expanded(
-                  child: Obx(() => Text(
-                    controller.filterDisplayText,
-                    style: TossDesignSystem.heading4,
-                  )),
+                  child: Obx(
+                    () => Text(
+                      controller.filterDisplayText,
+                      style: TossDesignSystem.heading4,
+                    ),
+                  ),
                 ),
                 // 필터 버튼
                 TossWidgets.iconButton(
@@ -115,44 +117,46 @@ class SellerOrdersView extends GetView<SellerOrdersController> {
               ],
             ),
             const SizedBox(height: TossDesignSystem.spacing20),
-            
-            Obx(() => Row(
-              children: [
-                Expanded(
-                  child: _buildSummaryItem(
-                    '신규 주문',
-                    controller.filteredPendingCount.value,
-                    TossDesignSystem.warning,
+
+            Obx(
+              () => Row(
+                children: [
+                  Expanded(
+                    child: _buildSummaryItem(
+                      '신규 주문',
+                      controller.filteredPendingCount.value,
+                      TossDesignSystem.warning,
+                    ),
                   ),
-                ),
-                Container(
-                  width: 1,
-                  height: 40,
-                  color: TossDesignSystem.gray200,
-                ),
-                const SizedBox(width: TossDesignSystem.spacing16),
-                Expanded(
-                  child: _buildSummaryItem(
-                    '주문확인',
-                    controller.filteredApprovedCount.value,
-                    TossDesignSystem.info,
+                  Container(
+                    width: 1,
+                    height: 40,
+                    color: TossDesignSystem.gray200,
                   ),
-                ),
-                Container(
-                  width: 1,
-                  height: 40,
-                  color: TossDesignSystem.gray200,
-                ),
-                const SizedBox(width: TossDesignSystem.spacing16),
-                Expanded(
-                  child: _buildSummaryItem(
-                    '배송완료',
-                    controller.filteredCompletedCount.value,
-                    TossDesignSystem.success,
+                  const SizedBox(width: TossDesignSystem.spacing16),
+                  Expanded(
+                    child: _buildSummaryItem(
+                      '주문확인',
+                      controller.filteredApprovedCount.value,
+                      TossDesignSystem.info,
+                    ),
                   ),
-                ),
-              ],
-            )),
+                  Container(
+                    width: 1,
+                    height: 40,
+                    color: TossDesignSystem.gray200,
+                  ),
+                  const SizedBox(width: TossDesignSystem.spacing16),
+                  Expanded(
+                    child: _buildSummaryItem(
+                      '배송완료',
+                      controller.filteredCompletedCount.value,
+                      TossDesignSystem.success,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ),
@@ -164,9 +168,7 @@ class SellerOrdersView extends GetView<SellerOrdersController> {
       children: [
         Text(
           count.toString(),
-          style: TossDesignSystem.heading3.copyWith(
-            color: color,
-          ),
+          style: TossDesignSystem.heading3.copyWith(color: color),
         ),
         const SizedBox(height: TossDesignSystem.spacing4),
         Text(
@@ -262,16 +264,16 @@ class SellerOrdersView extends GetView<SellerOrdersController> {
                     '${_formatAmount(order.totalAmount)}원',
                     style: TossDesignSystem.body1.copyWith(
                       fontWeight: FontWeight.w600,
-                      color: TossDesignSystem.primary,
+                      color: TossDesignSystem.textPrimary,
                     ),
                   ),
                 ],
               ),
             ],
           ),
-          
+
           const SizedBox(height: TossDesignSystem.spacing16),
-          
+
           // 주문 상품 목록
           Container(
             padding: const EdgeInsets.all(TossDesignSystem.spacing16),
@@ -300,38 +302,59 @@ class SellerOrdersView extends GetView<SellerOrdersController> {
                   ],
                 ),
                 const SizedBox(height: TossDesignSystem.spacing12),
-                
-                ...order.items.map((item) => Padding(
-                  padding: const EdgeInsets.only(bottom: TossDesignSystem.spacing8),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          '${item.productName}${item.unit.isNotEmpty ? ' (${item.unit})' : ''}',
-                          style: TossDesignSystem.body2,
+
+                ...order.items.map(
+                  (item) => Padding(
+                    padding: const EdgeInsets.only(
+                      bottom: TossDesignSystem.spacing8,
+                    ),
+                    child: Row(
+                      children: [
+                        // 상품명 + 단위 (좌측, 확장)
+                        Expanded(
+                          flex: 5,
+                          child: Text(
+                            '${item.productName}${item.unit.isNotEmpty ? ' (${item.unit})' : ''}',
+                            style: TossDesignSystem.body2,
+                            overflow: TextOverflow.ellipsis, // 긴 이름도 말줄임
+                          ),
                         ),
-                      ),
-                      Text(
-                        '${item.quantity}개',
-                        style: TossDesignSystem.body2.copyWith(
-                          fontWeight: FontWeight.w500,
+
+                        // 수량 (중간, 고정 너비 + 우측 정렬)
+                        SizedBox(
+                          width: 48,
+                          child: Text(
+                            '${item.quantity}개',
+                            textAlign: TextAlign.right,
+                            style: TossDesignSystem.body2.copyWith(
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: TossDesignSystem.spacing16),
-                      Text(
-                        '${_formatAmount(item.totalPrice ?? 0)}원',
-                        style: TossDesignSystem.body2.copyWith(
-                          color: TossDesignSystem.primary,
-                          fontWeight: FontWeight.w500,
+
+                        // 가격 좌우 여백
+                        const SizedBox(width: TossDesignSystem.spacing16),
+
+                        // 가격 (우측, 고정 너비 + 우측 정렬)
+                        SizedBox(
+                          width: 64,
+                          child: Text(
+                            '${_formatAmount(item.totalPrice ?? 0)}원',
+                            textAlign: TextAlign.right,
+                            style: TossDesignSystem.body2.copyWith(
+                              color: TossDesignSystem.textSecondary,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                )),
+                ),
               ],
             ),
           ),
-          
+
           // 메모가 있는 경우 표시
           if (order.notes != null && order.notes!.isNotEmpty) ...[
             const SizedBox(height: TossDesignSystem.spacing12),
@@ -373,9 +396,9 @@ class SellerOrdersView extends GetView<SellerOrdersController> {
               ),
             ),
           ],
-          
+
           const SizedBox(height: TossDesignSystem.spacing20),
-          
+
           // 액션 버튼들
           _buildActionButtons(order),
         ],
@@ -393,7 +416,9 @@ class SellerOrdersView extends GetView<SellerOrdersController> {
               child: OutlinedButton(
                 onPressed: () => _showRejectDialog(order),
                 style: TossDesignSystem.outlineButton.copyWith(
-                  foregroundColor: MaterialStateProperty.all(TossDesignSystem.error),
+                  foregroundColor: MaterialStateProperty.all(
+                    TossDesignSystem.error,
+                  ),
                   side: MaterialStateProperty.all(
                     const BorderSide(color: TossDesignSystem.error, width: 1),
                   ),
@@ -416,7 +441,11 @@ class SellerOrdersView extends GetView<SellerOrdersController> {
             const SizedBox(width: TossDesignSystem.spacing12),
             Expanded(
               child: ElevatedButton(
-                onPressed: () => controller.updateOrderStatus(order.id, OrderStatus.confirmed),
+                onPressed:
+                    () => controller.updateOrderStatus(
+                      order.id,
+                      OrderStatus.confirmed,
+                    ),
                 style: TossDesignSystem.primaryButton,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -435,12 +464,16 @@ class SellerOrdersView extends GetView<SellerOrdersController> {
             ),
           ],
         );
-        
+
       case OrderStatus.confirmed:
         return SizedBox(
           width: double.infinity,
           child: ElevatedButton(
-            onPressed: () => controller.updateOrderStatus(order.id, OrderStatus.completed),
+            onPressed:
+                () => controller.updateOrderStatus(
+                  order.id,
+                  OrderStatus.completed,
+                ),
             style: ElevatedButton.styleFrom(
               backgroundColor: TossDesignSystem.success,
               foregroundColor: Colors.white,
@@ -460,15 +493,13 @@ class SellerOrdersView extends GetView<SellerOrdersController> {
                 const SizedBox(width: TossDesignSystem.spacing8),
                 Text(
                   '배송완료',
-                  style: TossDesignSystem.button.copyWith(
-                    color: Colors.white,
-                  ),
+                  style: TossDesignSystem.button.copyWith(color: Colors.white),
                 ),
               ],
             ),
           ),
         );
-        
+
       case OrderStatus.completed:
         return Container(
           width: double.infinity,
@@ -498,7 +529,7 @@ class SellerOrdersView extends GetView<SellerOrdersController> {
             ],
           ),
         );
-        
+
       case OrderStatus.cancelled:
         return Container(
           width: double.infinity,
@@ -549,7 +580,9 @@ class SellerOrdersView extends GetView<SellerOrdersController> {
                 height: 64,
                 decoration: BoxDecoration(
                   color: TossDesignSystem.error.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(TossDesignSystem.radius16),
+                  borderRadius: BorderRadius.circular(
+                    TossDesignSystem.radius16,
+                  ),
                 ),
                 child: const Icon(
                   Icons.close_rounded,
@@ -590,7 +623,10 @@ class SellerOrdersView extends GetView<SellerOrdersController> {
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () {
-                        controller.updateOrderStatus(order.id, OrderStatus.cancelled);
+                        controller.updateOrderStatus(
+                          order.id,
+                          OrderStatus.cancelled,
+                        );
                         Get.back();
                       },
                       style: ElevatedButton.styleFrom(
@@ -599,7 +635,9 @@ class SellerOrdersView extends GetView<SellerOrdersController> {
                         elevation: 0,
                         shadowColor: Colors.transparent,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(TossDesignSystem.radius12),
+                          borderRadius: BorderRadius.circular(
+                            TossDesignSystem.radius12,
+                          ),
                         ),
                         padding: const EdgeInsets.symmetric(
                           horizontal: TossDesignSystem.spacing20,
@@ -680,16 +718,13 @@ class SellerOrdersView extends GetView<SellerOrdersController> {
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
-            
+
             // 헤더
             Padding(
               padding: const EdgeInsets.all(TossDesignSystem.spacing20),
               child: Row(
                 children: [
-                  Text(
-                    '기간 선택',
-                    style: TossDesignSystem.heading4,
-                  ),
+                  Text('기간 선택', style: TossDesignSystem.heading4),
                   const Spacer(),
                   TossWidgets.iconButton(
                     icon: Icons.close_rounded,
@@ -700,7 +735,7 @@ class SellerOrdersView extends GetView<SellerOrdersController> {
                 ],
               ),
             ),
-            
+
             // 빠른 필터 옵션들
             Padding(
               padding: const EdgeInsets.symmetric(
@@ -716,20 +751,17 @@ class SellerOrdersView extends GetView<SellerOrdersController> {
                   const SizedBox(height: TossDesignSystem.spacing8),
                   _buildFilterOption(DateFilterType.threeMonths),
                   const SizedBox(height: TossDesignSystem.spacing16),
-                  
+
                   // 구분선
-                  Container(
-                    height: 1,
-                    color: TossDesignSystem.gray200,
-                  ),
+                  Container(height: 1, color: TossDesignSystem.gray200),
                   const SizedBox(height: TossDesignSystem.spacing16),
-                  
+
                   // 기간 직접 선택
                   _buildCustomDateOption(),
                 ],
               ),
             ),
-            
+
             const SizedBox(height: TossDesignSystem.spacing20),
           ],
         ),
@@ -740,58 +772,65 @@ class SellerOrdersView extends GetView<SellerOrdersController> {
 
   /// 필터 옵션 위젯
   Widget _buildFilterOption(DateFilterType filterType) {
-    return Obx(() => GestureDetector(
-      onTap: () {
-        controller.setFilter(filterType);
-        Get.back();
-      },
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(TossDesignSystem.spacing16),
-        decoration: BoxDecoration(
-          color: controller.currentFilter.value == filterType
-              ? TossDesignSystem.primary.withOpacity(0.1)
-              : TossDesignSystem.gray50,
-          borderRadius: BorderRadius.circular(TossDesignSystem.radius12),
-          border: Border.all(
-            color: controller.currentFilter.value == filterType
-                ? TossDesignSystem.primary
-                : TossDesignSystem.gray200,
-            width: controller.currentFilter.value == filterType ? 2 : 1,
+    return Obx(
+      () => GestureDetector(
+        onTap: () {
+          controller.setFilter(filterType);
+          Get.back();
+        },
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(TossDesignSystem.spacing16),
+          decoration: BoxDecoration(
+            color:
+                controller.currentFilter.value == filterType
+                    ? TossDesignSystem.primary.withOpacity(0.1)
+                    : TossDesignSystem.gray50,
+            borderRadius: BorderRadius.circular(TossDesignSystem.radius12),
+            border: Border.all(
+              color:
+                  controller.currentFilter.value == filterType
+                      ? TossDesignSystem.primary
+                      : TossDesignSystem.gray200,
+              width: controller.currentFilter.value == filterType ? 2 : 1,
+            ),
           ),
-        ),
-        child: Row(
-          children: [
-            Icon(
-              _getFilterIcon(filterType),
-              color: controller.currentFilter.value == filterType
-                  ? TossDesignSystem.primary
-                  : TossDesignSystem.textSecondary,
-              size: 20,
-            ),
-            const SizedBox(width: TossDesignSystem.spacing12),
-            Text(
-              filterType.displayText,
-              style: TossDesignSystem.body1.copyWith(
-                color: controller.currentFilter.value == filterType
-                    ? TossDesignSystem.primary
-                    : TossDesignSystem.textPrimary,
-                fontWeight: controller.currentFilter.value == filterType
-                    ? FontWeight.w600
-                    : FontWeight.w400,
-              ),
-            ),
-            const Spacer(),
-            if (controller.currentFilter.value == filterType)
-              const Icon(
-                Icons.check_rounded,
-                color: TossDesignSystem.primary,
+          child: Row(
+            children: [
+              Icon(
+                _getFilterIcon(filterType),
+                color:
+                    controller.currentFilter.value == filterType
+                        ? TossDesignSystem.primary
+                        : TossDesignSystem.textSecondary,
                 size: 20,
               ),
-          ],
+              const SizedBox(width: TossDesignSystem.spacing12),
+              Text(
+                filterType.displayText,
+                style: TossDesignSystem.body1.copyWith(
+                  color:
+                      controller.currentFilter.value == filterType
+                          ? TossDesignSystem.primary
+                          : TossDesignSystem.textPrimary,
+                  fontWeight:
+                      controller.currentFilter.value == filterType
+                          ? FontWeight.w600
+                          : FontWeight.w400,
+                ),
+              ),
+              const Spacer(),
+              if (controller.currentFilter.value == filterType)
+                const Icon(
+                  Icons.check_rounded,
+                  color: TossDesignSystem.primary,
+                  size: 20,
+                ),
+            ],
+          ),
         ),
       ),
-    ));
+    );
   }
 
   /// 커스텀 날짜 선택 옵션
@@ -804,10 +843,7 @@ class SellerOrdersView extends GetView<SellerOrdersController> {
         decoration: BoxDecoration(
           color: TossDesignSystem.gray50,
           borderRadius: BorderRadius.circular(TossDesignSystem.radius12),
-          border: Border.all(
-            color: TossDesignSystem.gray200,
-            width: 1,
-          ),
+          border: Border.all(color: TossDesignSystem.gray200, width: 1),
         ),
         child: Row(
           children: [
@@ -838,25 +874,26 @@ class SellerOrdersView extends GetView<SellerOrdersController> {
   /// 날짜 범위 선택기 표시 (토스 캘린더 사용)
   void _showDateRangePicker() async {
     Get.back(); // 바텀시트 닫기
-    
+
     // 토스 스타일 캘린더 다이얼로그 표시
     await showDialog(
       context: Get.context!,
       barrierDismissible: true,
-      builder: (context) => Dialog(
-        backgroundColor: Colors.transparent,
-        insetPadding: const EdgeInsets.all(TossDesignSystem.spacing20),
-        child: TossCalendarWidget(
-          initialStartDate: controller.customStartDate.value,
-          initialEndDate: controller.customEndDate.value,
-          isRangeSelection: true,
-          onDateRangeSelected: (startDate, endDate) {
-            if (startDate != null && endDate != null) {
-              controller.setCustomDateRange(startDate, endDate);
-            }
-          },
-        ),
-      ),
+      builder:
+          (context) => Dialog(
+            backgroundColor: Colors.transparent,
+            insetPadding: const EdgeInsets.all(TossDesignSystem.spacing20),
+            child: TossCalendarWidget(
+              initialStartDate: controller.customStartDate.value,
+              initialEndDate: controller.customEndDate.value,
+              isRangeSelection: true,
+              onDateRangeSelected: (startDate, endDate) {
+                if (startDate != null && endDate != null) {
+                  controller.setCustomDateRange(startDate, endDate);
+                }
+              },
+            ),
+          ),
     );
   }
 

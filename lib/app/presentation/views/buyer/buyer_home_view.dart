@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-
+import 'package:order_market_app/app/presentation/controllers/buyer/order_history_controller.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/order_utils.dart';
 import '../../../data/models/order_model.dart';
+import '../../../data/models/user_model.dart'; // UserState 사용을 위해 추가
+import '../../../core/services/auth_service.dart'; // AuthService 사용을 위해 추가
 import '../../controllers/buyer/buyer_home_controller.dart';
 import '../../controllers/buyer/seller_connect_controller.dart';
-import '../../controllers/buyer/order_history_controller.dart';
 import '../../controllers/main_controller.dart';
 
 class BuyerHomeView extends GetView<BuyerHomeController> {
@@ -56,10 +57,121 @@ class BuyerHomeView extends GetView<BuyerHomeController> {
 
   /// 환영 메시지 섹션 - 개선된 버전
   Widget _buildWelcomeSection(BuildContext context) {
+    final authService = Get.find<AuthService>();
+
     return Obx(() {
-      final user = controller.currentUser;
-      final userName = user?.displayName ?? '구매자';
-      final businessName = user?.businessName;
+      final userState = authService.userStateRx.value;
+      String userName = '구매자';
+      String? businessName;
+      String welcomeMessage = '신선한 식자재를 주문해보세요';
+      Widget content;
+
+      if (userState is UserLoading) {
+        content = const Center(
+          child: CircularProgressIndicator(color: Colors.white),
+        );
+        welcomeMessage = '사용자 정보를 불러오는 중...';
+      } else if (userState is UserLoaded) {
+        final user = (userState as UserLoaded).user;
+        userName = user.displayName;
+        businessName = user.businessName;
+        content = Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (businessName != null && businessName.isNotEmpty) ...[
+              Text(
+                businessName,
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                userName,
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  color: Colors.white.withOpacity(0.9),
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ] else ...[
+              Text(
+                userName,
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+            const SizedBox(height: 8),
+            Text(
+              welcomeMessage,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Colors.white.withOpacity(0.8),
+              ),
+            ),
+          ],
+        );
+      } else if (userState is UserError) {
+        userName = '사용자';
+        welcomeMessage =
+            '사용자 정보를 불러오지 못했습니다: ${(userState as UserError).message}';
+        content = Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '오류 발생',
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              welcomeMessage,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Colors.white.withOpacity(0.8),
+              ),
+            ),
+            const SizedBox(height: 8),
+            ElevatedButton(
+              onPressed: () {
+                // 재시도 로직 (AuthService에서 다시 로드 시도)
+                if (authService.firebaseUser != null) {
+                  authService.loadUserData(authService.firebaseUser!.uid);
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                foregroundColor: AppColors.primary,
+              ),
+              child: const Text('재시도'),
+            ),
+          ],
+        );
+      } else {
+        // UserInitial, UserNew 또는 알 수 없는 상태
+        userName = '구매자';
+        content = Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              userName,
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              welcomeMessage,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Colors.white.withOpacity(0.8),
+              ),
+            ),
+          ],
+        );
+      }
 
       return Container(
         width: double.infinity,
@@ -73,80 +185,29 @@ class BuyerHomeView extends GetView<BuyerHomeController> {
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: AppColors.primary.withValues(alpha: 0.3),
+              color: AppColors.primary.withOpacity(0.3),
               offset: const Offset(0, 8),
               blurRadius: 24,
               spreadRadius: 0,
             ),
           ],
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Row(
           children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(
-                    Icons.shopping_bag_rounded,
-                    color: Colors.white,
-                    size: 24,
-                  ),
-                ),
-                const SizedBox(width: AppTheme.medium),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // 사업체명이 있으면 먼저 표시
-                      if (businessName != null && businessName.isNotEmpty) ...[
-                        Text(
-                          businessName,
-                          style: Theme.of(
-                            context,
-                          ).textTheme.headlineSmall?.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          userName,
-                          style: Theme.of(
-                            context,
-                          ).textTheme.bodyLarge?.copyWith(
-                            color: Colors.white.withValues(alpha: 0.9),
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ] else ...[
-                        // 사업체명이 없으면 이름만 표시
-                        Text(
-                          userName,
-                          style: Theme.of(
-                            context,
-                          ).textTheme.headlineSmall?.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                      const SizedBox(height: 8),
-                      Text(
-                        '신선한 식자재를 주문해보세요',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Colors.white.withValues(alpha: 0.8),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(
+                Icons.shopping_bag_rounded,
+                color: Colors.white,
+                size: 24,
+              ),
             ),
+            const SizedBox(width: AppTheme.medium),
+            Expanded(child: content),
           ],
         ),
       );

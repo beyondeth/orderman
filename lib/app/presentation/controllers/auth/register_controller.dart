@@ -32,6 +32,7 @@ class RegisterController extends GetxController {
   // 역할 선택
   void selectRole(UserRole role) {
     selectedRole.value = role;
+    print('=== RegisterController: Selected role: ${role.name} ===');
   }
 
   // Toggle password visibility
@@ -90,15 +91,13 @@ class RegisterController extends GetxController {
       );
 
       if (userModel != null) {
-        print('=== Registration successful, navigating to home ===');
-        
-        // 회원가입 성공 시 역할에 따라 홈 화면으로 이동
-        if (userModel.role == UserRole.buyer) {
-          Get.offAllNamed(AppRoutes.buyerHome);
-        } else {
-          Get.offAllNamed(AppRoutes.sellerHome);
-        }
-        
+        print('=== Registration successful ===');
+
+        // 회원가입 성공 후 프로필 완성도를 확인하여 프로필 설정 화면으로 이동
+        // AuthService의 _isProfileComplete 로직을 재사용하거나 유사한 로직을 여기에 구현
+        // 현재는 SplashController의 로직을 따르기 위해 ProfileSetup으로 이동
+        Get.offAllNamed(AppRoutes.profileSetup, arguments: {'role': userModel.role});
+
         Get.snackbar(
           '회원가입 성공',
           '환영합니다! ${userModel.displayName}님',

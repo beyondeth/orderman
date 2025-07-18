@@ -36,6 +36,7 @@ dependencies:
   
   # Image & File handling
   image_picker: ^1.0.4
+  retry: ^3.1.2
 
 dev_dependencies:
   flutter_test:

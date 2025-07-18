@@ -6,6 +6,7 @@ import '../../../core/constants/app_constants.dart';
 import '../../../data/models/product_model.dart';
 import '../../../data/models/connection_model.dart';
 import '../../controllers/buyer/order_controller.dart';
+import '../common/quantity_input_field.dart';
 
 class OrderView extends GetView<OrderController> {
   const OrderView({super.key});
@@ -274,35 +275,16 @@ class OrderView extends GetView<OrderController> {
                 // 수량 입력
                 SizedBox(
                   width: 80,
-                  child: TextField(
-                    enabled: product.price != null, // Disable if no price
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [
-                      FilteringTextInputFormatter.digitsOnly,
-                    ],
-                    textAlign: TextAlign.center,
-                    decoration: InputDecoration(
-                      hintText: product.price != null ? '0' : '-',
-                      border: const OutlineInputBorder(),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 8,
-                      ),
-                      filled: product.price == null,
-                      fillColor: product.price == null 
-                          ? Get.theme.colorScheme.surfaceVariant.withOpacity(0.3)
-                          : null,
-                    ),
-                    controller: TextEditingController(
-                      text: quantity > 0 ? quantity.toString() : '',
-                    ),
-                    onChanged: (value) {
+                  child: QuantityInputField(
+                    productId: product.id,
+                    initialValue: quantity,
+                    enabled: product.price != null,
+                    onChanged: (productId, newQuantity) {
                       if (product.price != null) {
-                        final newQuantity = int.tryParse(value) ?? 0;
                         if (newQuantity > 0) {
-                          controller.selectProduct(product.id, newQuantity);
+                          controller.selectProduct(productId, newQuantity);
                         } else {
-                          controller.removeProduct(product.id);
+                          controller.removeProduct(productId);
                         }
                       }
                     },

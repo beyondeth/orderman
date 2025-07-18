@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:order_market_app/app/presentation/controllers/main_controller.dart';
 
 import '../../../core/services/auth_service.dart';
 import '../../../core/services/connection_service.dart';
@@ -38,23 +39,25 @@ class SellerConnectController extends GetxController {
 
     isLoadingConnections.value = true;
 
-    _connectionService.getApprovedConnections(currentUser.uid).listen(
-      (connections) {
-        connectedSellers.value = connections;
-        isLoadingConnections.value = false;
-      },
-      onError: (error) {
-        print('=== Error loading connections: $error ===');
-        isLoadingConnections.value = false;
-        Get.snackbar('오류', '연결된 판매자 목록을 불러오는데 실패했습니다.');
-      },
-    );
+    _connectionService
+        .getApprovedConnections(currentUser.uid)
+        .listen(
+          (connections) {
+            connectedSellers.value = connections;
+            isLoadingConnections.value = false;
+          },
+          onError: (error) {
+            print('=== Error loading connections: $error ===');
+            isLoadingConnections.value = false;
+            Get.snackbar('오류', '연결된 판매자 목록을 불러오는데 실패했습니다.');
+          },
+        );
   }
 
   // 연결 요청 보내기
   Future<void> sendConnectionRequest() async {
     final email = emailController.text.trim();
-    
+
     if (email.isEmpty) {
       Get.snackbar('입력 오류', '판매자 이메일을 입력해주세요.');
       return;
@@ -92,15 +95,28 @@ class SellerConnectController extends GetxController {
     }
   }
 
-  // 주문 화면으로 이동
+  // 주문 화면으로 이동 (주문 탭으로 이동하도록 수정)
   void goToOrder(ConnectionModel connection) {
-    Get.toNamed(
-      AppRoutes.orderCreate,
-      arguments: {
-        'connection': connection,
-        'sellerId': connection.sellerId,
-      },
-    );
+    try {
+      // MainController를 통해 주문 탭으로 이동
+      final mainController = Get.find<MainController>();
+
+      // 선택한 판매자 정보를 MainController에 설정
+      mainController.setActiveConnection(connection);
+
+      // 주문 탭으로 이동
+      mainController.changeTab(1);
+
+      print('=== 주문 탭으로 이동: ${connection.sellerName} ===');
+    } catch (e) {
+      print('=== 주문 탭 이동 오류: $e ===');
+
+      // 폴백: 기존 방식으로 주문 화면으로 이동
+      Get.toNamed(
+        AppRoutes.orderCreate,
+        arguments: {'connection': connection, 'sellerId': connection.sellerId},
+      );
+    }
   }
 
   // 연결 목록 새로고침

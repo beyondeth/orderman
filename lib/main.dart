@@ -15,8 +15,16 @@ import 'app/core/services/env_service.dart';
 import 'app/core/state/global_state_controller.dart';
 import 'app/presentation/controllers/splash_controller.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // .env 파일 로드
+  await EnvService.initialize();
+
+  // Firebase 초기화
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  // 앱 실행
   runApp(const OrderMarketApp());
 }
 
@@ -32,7 +40,7 @@ class OrderMarketApp extends StatelessWidget {
       initialRoute: AppRoutes.splash,
       getPages: AppPages.routes,
       debugShowCheckedModeBanner: false,
-      
+
       // 🔥 bamtol 방식: initialBinding에서 모든 의존성 등록
       initialBinding: BindingsBuilder(() {
         // SplashController가 다른 모든 서비스의 초기화 및 등록을 담당합니다.

@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:retry/retry.dart';
 
 import '../../data/models/user_model.dart';
 
@@ -13,11 +14,14 @@ class AuthService extends GetxService {
   // Reactive variables
   final Rx<User?> _firebaseUser = Rx<User?>(null);
   final Rx<UserModel?> _userModel = Rx<UserModel?>(null);
+  final Rx<UserState> _userState = Rx<UserState>(UserInitial()); // UserState 추가
   final RxBool _isLoading = false.obs;
+  final RxBool isAuthCheckComplete = false.obs; // 인증 확인 완료 상태
 
   // Getters
   User? get firebaseUser => _firebaseUser.value;
   UserModel? get userModel => _userModel.value;
+  Rx<UserState> get userStateRx => _userState; // UserState getter를 Rx<UserState>로 변경
   bool get isLoading => _isLoading.value;
 
   @override
@@ -32,74 +36,72 @@ class AuthService extends GetxService {
     ever(_firebaseUser, _handleAuthStateChanged);
   }
 
-  // bamtol 방식: 인증 상태 변화 처리
+  // 사용자 상태 변화에 따른 처리
   void _handleAuthStateChanged(User? user) async {
     print('=== Auth state changed: ${user?.uid} ===');
     
     if (user == null) {
       _userModel.value = null;
+      _userState.value = UserInitial(); // 로그아웃 시 초기 상태로
       print('=== 사용자 로그아웃됨 ===');
+      isAuthCheckComplete.value = true; // 인증 확인 완료
     } else {
-      await _loadUserData(user.uid);
-    }
-  }
+      _userState.value = UserLoading(); // 로딩 시작
+      final userStateResult = await _loadUserData(user.uid);
+      _userState.value = userStateResult; // 결과 반영
 
-  // 사용자 데이터 로드 (bamtol 방식)
-  Future<void> _loadUserData(String uid) async {
-    const maxRetries = 3;
-    const baseDelay = Duration(seconds: 2);
-    
-    for (int attempt = 1; attempt <= maxRetries; attempt++) {
-      try {
-        print('=== Loading user data for uid: $uid (시도 $attempt/$maxRetries) ===');
-        
-        final doc = await _firestore.collection('users').doc(uid).get();
-        
-        if (doc.exists && doc.data() != null) {
-          final data = doc.data()!;
-          print('=== Firestore 문서 데이터 ===');
-          print('uid: ${data['uid']}');
-          print('email: ${data['email']}');
-          print('displayName: ${data['displayName']}');
-          print('role: ${data['role']}');
-          print('businessName: ${data['businessName']}');
-          print('phoneNumber: ${data['phoneNumber']}');
-          print('createdAt: ${data['createdAt']}');
-          
-          _userModel.value = UserModel.fromFirestore(doc);
-          print('=== User model loaded: ${_userModel.value?.displayName} (${_userModel.value?.role.name}) ===');
-          return; // 성공시 즉시 반환
-        } else {
-          print('=== User document does not exist for uid: $uid ===');
-          _userModel.value = null;
-          return; // 문서가 없으면 재시도 불필요
-        }
-      } catch (e) {
-        print('=== Failed to load user data (시도 $attempt/$maxRetries): $e ===');
-        
-        if (attempt == maxRetries) {
-          print('=== 모든 재시도 실패 - 사용자 데이터 로드 포기 ===');
-          _userModel.value = null;
-          return;
-        }
-        
-        // 지수 백오프로 대기
-        final delay = Duration(seconds: baseDelay.inSeconds * attempt);
-        print('=== ${delay.inSeconds}초 후 재시도... ===');
-        await Future.delayed(delay);
+      if (userStateResult is UserLoaded) {
+        _userModel.value = userStateResult.user;
+      } else {
+        _userModel.value = null; // 로드 실패 또는 새 사용자일 경우 모델은 null
       }
+      isAuthCheckComplete.value = true; // 인증 확인 완료
     }
   }
 
-  // 임시 사용자 모델 설정 (네트워크 문제 시 사용)
-  void setTempUserModel(UserModel userModel) {
-    _userModel.value = userModel;
-    print('=== 임시 사용자 모델 설정: ${userModel.displayName} (${userModel.role.name}) ===');
+  // 사용자 데이터 로드
+  Future<UserState> _loadUserData(String uid) async {
+    final r = RetryOptions(
+      maxAttempts: 3, // 최대 3번 시도
+      delayFactor: Duration(seconds: 2), // 딜레이 증가 요소 (2초, 4초, 8초)
+      maxDelay: Duration(seconds: 10), // 최대 딜레이 10초
+      randomizationFactor: 0.25, // 25%의 Jitter 추가
+    );
+
+    try {
+      print('=== Loading user data for uid: $uid ===');
+      final doc = await r.retry(
+        () => _firestore.collection('users').doc(uid).get(),
+        retryIf: (e) =>
+            e is FirebaseException &&
+            (e.code == 'unavailable' ||
+                e.code == 'network-request-failed' ||
+                e.code == 'internal'),
+      );
+
+      if (doc.exists && doc.data() != null) {
+        final user = UserModel.fromFirestore(doc);
+        print('=== User model loaded: ${user.displayName} (${user.role.name}) ===');
+        return UserLoaded(user);
+      } else {
+        print('=== User document does not exist for uid: $uid ===');
+        return UserNew();
+      }
+    } on FirebaseException catch (e) {
+      print('=== FirebaseException loading user data: ${e.code} - ${e.message} ===');
+      if (e.code == 'unavailable' || e.code == 'network-request-failed' || e.code == 'internal') {
+        return UserError('네트워크 연결을 확인하거나 잠시 후 다시 시도해주세요.');
+      }
+      return UserError('사용자 데이터를 불러오는 데 실패했습니다: ${e.message}');
+    } catch (e) {
+      print('=== General error loading user data: $e ===');
+      return UserError('알 수 없는 오류로 사용자 데이터를 불러오지 못했습니다.');
+    }
   }
 
   // 외부에서 사용자 데이터 로드 (public 메서드)
-  Future<void> loadUserData(String uid) async {
-    await _loadUserData(uid);
+  Future<UserState> loadUserData(String uid) async {
+    return await _loadUserData(uid);
   }
 
   // 사용자 프로필 업데이트
@@ -142,7 +144,7 @@ class AuthService extends GetxService {
   Future<UserModel?> signUpWithEmail(String email, String password, {UserRole? role}) async {
     try {
       _isLoading.value = true;
-      print('=== Signing up with email: $email, role: ${role ?? UserRole.buyer} ===');
+      print('=== AuthService: Signing up with email: $email, received role: ${role?.name} ===');
 
       // 1. Firebase Auth 사용자 생성
       final credential = await _auth.createUserWithEmailAndPassword(
