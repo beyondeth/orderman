@@ -96,7 +96,7 @@ class OrderTabView extends GetView<BuyerHomeController> {
   Widget _buildConnectedSellers(BuildContext context) {
     // SellerConnectController 사용하여 홈 화면과 동일한 로직 적용
     final connectController = Get.find<SellerConnectController>();
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -107,9 +107,9 @@ class OrderTabView extends GetView<BuyerHomeController> {
             const SizedBox(width: 8),
             Text(
               '연결된 판매자',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
             const Spacer(),
             // 더보기 버튼 (연결 탭으로 이동)
@@ -118,10 +118,7 @@ class OrderTabView extends GetView<BuyerHomeController> {
                 final mainController = Get.find<MainController>();
                 mainController.changeTab(3); // 연결 탭으로 이동
               },
-              child: Text(
-                '더보기',
-                style: TextStyle(color: Theme.of(context).primaryColor),
-              ),
+              child: Text('더보기', style: TextStyle(color: Colors.grey[500])),
             ),
           ],
         ),
@@ -169,17 +166,17 @@ class OrderTabView extends GetView<BuyerHomeController> {
             const SizedBox(height: 16),
             Text(
               '연결된 판매자가 없습니다',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: Colors.grey[600],
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(color: Colors.grey[600]),
             ),
             const SizedBox(height: 8),
             Text(
               '연결 탭에서 판매자와 연결해보세요',
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Colors.grey[500],
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: Colors.grey[500]),
             ),
             const SizedBox(height: 16),
             ElevatedButton(
@@ -256,7 +253,7 @@ class OrderTabView extends GetView<BuyerHomeController> {
 
   Widget _buildSellerCard(BuildContext context, ConnectionModel connection) {
     return Card(
-      elevation: 2,
+      elevation: 0.5,
       child: Column(
         children: [
           // 판매자 정보 헤더
@@ -335,18 +332,16 @@ class OrderTabView extends GetView<BuyerHomeController> {
                   ),
 
                   // 주문하기 버튼 (아이콘 + 텍스트)
-                  ElevatedButton.icon(
+                  ElevatedButton(
                     onPressed: () => _toggleOrderList(connection.id),
-                    icon: const Icon(Icons.shopping_cart, size: 20),
-                    label: const Text('주문하기'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).colorScheme.onPrimary,
-                      foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
+                        horizontal: 12,
+                        vertical: 6,
                       ),
+                      minimumSize: const Size(60, 32),
                     ),
+                    child: const Text('주문하기', style: TextStyle(fontSize: 12)),
                   ),
                 ],
               ),
@@ -503,17 +498,17 @@ class OrderTabView extends GetView<BuyerHomeController> {
         trailing:
             isSelected
                 ? QuantityControlButtons(
-                    productId: product.id,
-                    quantity: quantity,
-                    onChanged: (productId, newQuantity) {
-                      if (newQuantity > 0) {
-                        // 직접 selectProduct 메서드 호출
-                        controller.selectProduct(productId, newQuantity);
-                      } else {
-                        controller.toggleProductSelection(productId);
-                      }
-                    },
-                  )
+                  productId: product.id,
+                  quantity: quantity,
+                  onChanged: (productId, newQuantity) {
+                    if (newQuantity > 0) {
+                      // 직접 selectProduct 메서드 호출
+                      controller.selectProduct(productId, newQuantity);
+                    } else {
+                      controller.toggleProductSelection(productId);
+                    }
+                  },
+                )
                 : null,
       );
     });

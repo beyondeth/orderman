@@ -13,10 +13,7 @@ class ProductManagementView extends GetView<ProductManagementController> {
     return Scaffold(
       backgroundColor: TossDesignSystem.background,
       appBar: AppBar(
-        title: Text(
-          '상품 관리',
-          style: TossDesignSystem.heading4,
-        ),
+        title: Text('상품 관리', style: TossDesignSystem.heading4),
         backgroundColor: TossDesignSystem.background,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
@@ -56,7 +53,7 @@ class ProductManagementView extends GetView<ProductManagementController> {
               ),
             ),
           ),
-          
+
           // 상품 목록
           Expanded(
             child: Obx(() {
@@ -77,8 +74,9 @@ class ProductManagementView extends GetView<ProductManagementController> {
                   horizontal: TossDesignSystem.spacing20,
                 ),
                 itemCount: controller.products.length,
-                separatorBuilder: (context, index) => 
-                    const SizedBox(height: TossDesignSystem.spacing12),
+                separatorBuilder:
+                    (context, index) =>
+                        const SizedBox(height: TossDesignSystem.spacing12),
                 itemBuilder: (context, index) {
                   final product = controller.products[index];
                   return _buildProductCard(product);
@@ -132,9 +130,7 @@ class ProductManagementView extends GetView<ProductManagementController> {
               style: TossDesignSystem.primaryButton,
               child: Text(
                 '상품 등록하기',
-                style: TossDesignSystem.button.copyWith(
-                  color: Colors.white,
-                ),
+                style: TossDesignSystem.button.copyWith(color: Colors.white),
               ),
             ),
           ],
@@ -180,25 +176,26 @@ class ProductManagementView extends GetView<ProductManagementController> {
                 children: [
                   TossWidgets.statusBadge(
                     text: product.isActive ? '판매중' : '판매중지',
-                    color: product.isActive 
-                        ? TossDesignSystem.success 
-                        : TossDesignSystem.gray500,
+                    color:
+                        product.isActive
+                            ? TossDesignSystem.success
+                            : TossDesignSystem.gray500,
                   ),
                   const SizedBox(height: TossDesignSystem.spacing4),
                   Text(
                     '${_formatPrice(product.price)}원',
                     style: TossDesignSystem.body1.copyWith(
                       fontWeight: FontWeight.w600,
-                      color: TossDesignSystem.primary,
+                      color: TossDesignSystem.textPrimary,
                     ),
                   ),
                 ],
               ),
             ],
           ),
-          
+
           const SizedBox(height: TossDesignSystem.spacing16),
-          
+
           // 액션 버튼들
           Row(
             children: [
@@ -230,21 +227,26 @@ class ProductManagementView extends GetView<ProductManagementController> {
               const SizedBox(width: TossDesignSystem.spacing8),
               Expanded(
                 child: ElevatedButton(
-                  onPressed: () => controller.toggleProductStatus(
-                    product.id, 
-                    !product.isActive,
-                  ),
+                  onPressed:
+                      () => controller.toggleProductStatus(
+                        product.id,
+                        !product.isActive,
+                      ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: product.isActive 
-                        ? TossDesignSystem.gray100 
-                        : TossDesignSystem.success,
-                    foregroundColor: product.isActive 
-                        ? TossDesignSystem.textPrimary 
-                        : Colors.white,
+                    backgroundColor:
+                        product.isActive
+                            ? TossDesignSystem.gray100
+                            : TossDesignSystem.success,
+                    foregroundColor:
+                        product.isActive
+                            ? TossDesignSystem.textPrimary
+                            : Colors.white,
                     elevation: 0,
                     shadowColor: Colors.transparent,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(TossDesignSystem.radius12),
+                      borderRadius: BorderRadius.circular(
+                        TossDesignSystem.radius12,
+                      ),
                     ),
                     padding: const EdgeInsets.symmetric(
                       vertical: TossDesignSystem.spacing12,
@@ -254,8 +256,8 @@ class ProductManagementView extends GetView<ProductManagementController> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(
-                        product.isActive 
-                            ? Icons.pause_circle_outline 
+                        product.isActive
+                            ? Icons.pause_circle_outline
                             : Icons.play_circle_outline,
                         size: 16,
                       ),
@@ -317,7 +319,9 @@ class ProductManagementView extends GetView<ProductManagementController> {
                       height: 32,
                       decoration: BoxDecoration(
                         color: TossDesignSystem.primary.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(TossDesignSystem.radius8),
+                        borderRadius: BorderRadius.circular(
+                          TossDesignSystem.radius8,
+                        ),
                       ),
                       child: Icon(
                         isEdit ? Icons.edit_rounded : Icons.add_rounded,
@@ -333,7 +337,7 @@ class ProductManagementView extends GetView<ProductManagementController> {
                   ],
                 ),
                 const SizedBox(height: TossDesignSystem.spacing24),
-                
+
                 // 상품명 입력
                 TextFormField(
                   controller: nameController,
@@ -350,7 +354,7 @@ class ProductManagementView extends GetView<ProductManagementController> {
                   },
                 ),
                 const SizedBox(height: TossDesignSystem.spacing16),
-                
+
                 // 단위 입력 (선택사항)
                 TextFormField(
                   controller: unitController,
@@ -361,7 +365,7 @@ class ProductManagementView extends GetView<ProductManagementController> {
                   style: TossDesignSystem.body1,
                 ),
                 const SizedBox(height: TossDesignSystem.spacing16),
-                
+
                 // 가격 입력
                 TextFormField(
                   controller: priceController,
@@ -369,7 +373,9 @@ class ProductManagementView extends GetView<ProductManagementController> {
                     labelText: '가격',
                     hintText: '가격을 입력하세요',
                     suffixIcon: Padding(
-                      padding: const EdgeInsets.only(right: TossDesignSystem.spacing16),
+                      padding: const EdgeInsets.only(
+                        right: TossDesignSystem.spacing16,
+                      ),
                       child: Center(
                         widthFactor: 0.0,
                         child: Text(
@@ -393,7 +399,7 @@ class ProductManagementView extends GetView<ProductManagementController> {
                   },
                 ),
                 const SizedBox(height: TossDesignSystem.spacing32),
-                
+
                 // 액션 버튼들
                 Row(
                   children: [
@@ -417,9 +423,10 @@ class ProductManagementView extends GetView<ProductManagementController> {
                             final name = nameController.text.trim();
                             final unit = unitController.text.trim();
                             final priceText = priceController.text.trim();
-                            final price = priceText.isNotEmpty 
-                                ? int.tryParse(priceText) ?? 0 
-                                : 0;
+                            final price =
+                                priceText.isNotEmpty
+                                    ? int.tryParse(priceText) ?? 0
+                                    : 0;
 
                             if (isEdit) {
                               controller.updateProductWithParams(
@@ -429,7 +436,11 @@ class ProductManagementView extends GetView<ProductManagementController> {
                                 price,
                               );
                             } else {
-                              controller.addProductWithParams(name, unit, price);
+                              controller.addProductWithParams(
+                                name,
+                                unit,
+                                price,
+                              );
                             }
                             Get.back();
                           }
@@ -471,7 +482,9 @@ class ProductManagementView extends GetView<ProductManagementController> {
                 height: 64,
                 decoration: BoxDecoration(
                   color: TossDesignSystem.error.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(TossDesignSystem.radius16),
+                  borderRadius: BorderRadius.circular(
+                    TossDesignSystem.radius16,
+                  ),
                 ),
                 child: const Icon(
                   Icons.delete_outline_rounded,
@@ -521,7 +534,9 @@ class ProductManagementView extends GetView<ProductManagementController> {
                         elevation: 0,
                         shadowColor: Colors.transparent,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(TossDesignSystem.radius12),
+                          borderRadius: BorderRadius.circular(
+                            TossDesignSystem.radius12,
+                          ),
                         ),
                         padding: const EdgeInsets.symmetric(
                           horizontal: TossDesignSystem.spacing20,
