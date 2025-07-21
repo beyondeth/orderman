@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:order_market_app/app/presentation/controllers/main_controller.dart';
 
-import '../../../core/constants/app_constants.dart';
+import '../../../core/theme/toss_design_system.dart';
 import '../../../data/models/order_model.dart';
 import '../../controllers/buyer/order_history_controller.dart';
 
@@ -12,7 +13,7 @@ class OrderHistoryView extends GetView<OrderHistoryController> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.all(TossDesignSystem.spacing20),
       child: Column(
         children: [
           // 날짜 선택 버튼 추가
@@ -21,18 +22,16 @@ class OrderHistoryView extends GetView<OrderHistoryController> {
             children: [
               Text(
                 '주문 내역',
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TossDesignSystem.heading3,
               ),
               IconButton(
-                icon: const Icon(Icons.calendar_month),
+                icon: const Icon(Icons.calendar_month, color: TossDesignSystem.primary),
                 onPressed: controller.showDatePicker,
                 tooltip: '월별 조회',
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: TossDesignSystem.spacing20),
           Expanded(
             child: Column(
               children: [
@@ -51,16 +50,8 @@ class OrderHistoryView extends GetView<OrderHistoryController> {
 
   Widget _buildMonthlySummary() {
     return Obx(
-      () => Container(
-        padding: const EdgeInsets.all(AppConstants.defaultPadding),
-        decoration: BoxDecoration(
-          color: Get.theme.colorScheme.surface,
-          border: Border(
-            bottom: BorderSide(
-              color: Get.theme.colorScheme.outline.withOpacity(0.2),
-            ),
-          ),
-        ),
+      () => TossWidgets.card(
+        padding: const EdgeInsets.all(TossDesignSystem.spacing20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -69,19 +60,17 @@ class OrderHistoryView extends GetView<OrderHistoryController> {
               children: [
                 Text(
                   '${controller.selectedYear.value}년 ${controller.selectedMonth.value}월',
-                  style: Get.textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TossDesignSystem.heading4,
                 ),
                 if (controller.isLoadingSummary.value)
                   const SizedBox(
                     width: 20,
                     height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
+                    child: CircularProgressIndicator(strokeWidth: 2, color: TossDesignSystem.primary),
                   ),
               ],
             ),
-            const SizedBox(height: AppConstants.defaultPadding),
+            const SizedBox(height: TossDesignSystem.spacing16),
             Row(
               children: [
                 Expanded(
@@ -89,16 +78,16 @@ class OrderHistoryView extends GetView<OrderHistoryController> {
                     '총 주문',
                     '${controller.totalOrders.value}건',
                     Icons.shopping_cart,
-                    Get.theme.colorScheme.primary,
+                    TossDesignSystem.primary,
                   ),
                 ),
-                const SizedBox(width: AppConstants.defaultPadding),
+                const SizedBox(width: TossDesignSystem.spacing16),
                 Expanded(
                   child: _buildSummaryCard(
                     '총 금액',
-                    '${controller.totalAmount.value.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}원',
+                    '${NumberFormat('#,###').format(controller.totalAmount.value)}원',
                     Icons.attach_money,
-                    Colors.green,
+                    TossDesignSystem.success,
                   ),
                 ),
               ],
@@ -115,25 +104,20 @@ class OrderHistoryView extends GetView<OrderHistoryController> {
     IconData icon,
     Color color,
   ) {
-    return Container(
-      padding: const EdgeInsets.all(AppConstants.defaultPadding),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withOpacity(0.3)),
-      ),
+    return TossWidgets.surfaceCard(
+      padding: const EdgeInsets.all(TossDesignSystem.spacing16),
       child: Column(
         children: [
           Icon(icon, color: color, size: 24),
-          const SizedBox(height: AppConstants.smallPadding),
+          const SizedBox(height: TossDesignSystem.spacing8),
           Text(
             value,
-            style: Get.textTheme.titleMedium?.copyWith(
+            style: TossDesignSystem.heading4.copyWith(
               color: color,
               fontWeight: FontWeight.bold,
             ),
           ),
-          Text(title, style: Get.textTheme.bodySmall?.copyWith(color: color)),
+          Text(title, style: TossDesignSystem.body2.copyWith(color: color)),
         ],
       ),
     );
@@ -142,7 +126,7 @@ class OrderHistoryView extends GetView<OrderHistoryController> {
   Widget _buildOrderList() {
     return Obx(() {
       if (controller.isLoading.value) {
-        return const Center(child: CircularProgressIndicator());
+        return const Center(child: CircularProgressIndicator(color: TossDesignSystem.primary));
       }
 
       if (controller.orders.isEmpty) {
@@ -153,21 +137,17 @@ class OrderHistoryView extends GetView<OrderHistoryController> {
               Icon(
                 Icons.receipt_long_outlined,
                 size: 64,
-                color: Get.theme.colorScheme.outline,
+                color: TossDesignSystem.gray400,
               ),
-              const SizedBox(height: AppConstants.defaultPadding),
+              const SizedBox(height: TossDesignSystem.spacing16),
               Text(
                 '주문 내역이 없습니다',
-                style: Get.textTheme.titleMedium?.copyWith(
-                  color: Get.theme.colorScheme.onSurface.withOpacity(0.6),
-                ),
+                style: TossDesignSystem.heading4.copyWith(color: TossDesignSystem.textSecondary),
               ),
-              const SizedBox(height: AppConstants.smallPadding),
+              const SizedBox(height: TossDesignSystem.spacing8),
               Text(
                 '첫 주문을 시작해보세요!',
-                style: Get.textTheme.bodyMedium?.copyWith(
-                  color: Get.theme.colorScheme.onSurface.withOpacity(0.5),
-                ),
+                style: TossDesignSystem.body2.copyWith(color: TossDesignSystem.textTertiary),
               ),
             ],
           ),
@@ -175,134 +155,125 @@ class OrderHistoryView extends GetView<OrderHistoryController> {
       }
 
       return ListView.separated(
-        padding: const EdgeInsets.all(AppConstants.defaultPadding),
+        padding: const EdgeInsets.all(TossDesignSystem.spacing20),
         itemCount: controller.orders.length,
         separatorBuilder:
             (context, index) =>
-                const SizedBox(height: AppConstants.smallPadding),
+                const SizedBox(height: TossDesignSystem.spacing12),
         itemBuilder: (context, index) {
           final order = controller.orders[index];
-          return _buildOrderItem(order);
+          return _buildOrderItem(Get.context!, order);
         },
       );
     });
   }
 
-  Widget _buildOrderItem(OrderModel order) {
-    return Card(
-      child: ExpansionTile(
-        leading: CircleAvatar(
-          backgroundColor: order.status.color,
-          child: Icon(order.status.icon, color: Colors.white, size: 20),
-        ),
-        title: Text(
-          order.sellerBusinessName ?? order.sellerName,
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildOrderItem(BuildContext context, OrderModel order) {
+    return GestureDetector(
+      onTap: () {
+        // 주문 클릭 시 내역 탭으로 이동
+        final mainController = Get.find<MainController>();
+        mainController.changeTab(2); // 내역 탭으로 이동
+      },
+      child: TossWidgets.surfaceCard(
+        padding: const EdgeInsets.all(TossDesignSystem.spacing16),
+        child: ExpansionTile(
+          tilePadding: EdgeInsets.zero,
+          childrenPadding: const EdgeInsets.only(top: TossDesignSystem.spacing16),
+          // leading 제거 (왼쪽 세로 아이콘 삭제)
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 첫 번째 줄: 판매자명, 판매자, 상태를 가로로 나란히 배치 (아이콘 없이)
+              Row(
+                children: [
+                  // 판매자명
+                  Text(
+                    order.sellerBusinessName ?? order.sellerName,
+                    style: TossDesignSystem.body1.copyWith(fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(width: TossDesignSystem.spacing8),
+                  // 판매자 텍스트 (아이콘 삭제)
+                  TossWidgets.badge(text: '판매자', backgroundColor: TossDesignSystem.primary.withOpacity(0.1), textColor: TossDesignSystem.primary),
+                  const SizedBox(width: TossDesignSystem.spacing8),
+                  // 주문 상태 텍스트 (아이콘 삭제)
+                  TossWidgets.statusBadge(text: order.status.displayText, color: order.status.color),
+                ],
+              ),
+              const SizedBox(height: TossDesignSystem.spacing8),
+              // 두 번째 줄: 주문 날짜와 총 금액
+              Row(
+                children: [
+                  Text(
+                    DateFormat('yyyy-MM-dd HH:mm').format(order.orderDate),
+                    style: TossDesignSystem.caption.copyWith(color: TossDesignSystem.textSecondary),
+                  ),
+                  const Spacer(),
+                  Text(
+                    '${NumberFormat('#,###').format(order.totalAmount)}원',
+                    style: TossDesignSystem.body1.copyWith(fontWeight: FontWeight.bold, color: TossDesignSystem.primary),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          // 확장 내용 (기존과 동일)
           children: [
-            const SizedBox(height: 4),
-            Text(
-              DateFormat('yyyy-MM-dd HH:mm').format(order.orderDate),
-              style: Get.textTheme.bodySmall,
-            ),
-            const SizedBox(height: 4),
-            Row(
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 2,
-                  ),
-                  decoration: BoxDecoration(
-                    color: order.status.color.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    order.status.displayText,
-                    style: Get.textTheme.bodySmall?.copyWith(
-                      color: order.status.color,
-                      fontWeight: FontWeight.w500,
+                Text(
+                  '주문 상품',
+                  style: TossDesignSystem.body1.copyWith(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: TossDesignSystem.spacing8),
+                // 주문 상품 목록
+                ...order.items.map(
+                  (item) => Padding(
+                    padding: const EdgeInsets.symmetric(vertical: TossDesignSystem.spacing4),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            '${item.productName} (${item.unit})',
+                            style: TossDesignSystem.body2,
+                          ),
+                        ),
+                        Text(
+                          '${item.quantity}개',
+                          style: TossDesignSystem.body2.copyWith(fontWeight: FontWeight.w500),
+                        ),
+                        const SizedBox(width: TossDesignSystem.spacing16),
+                        Text(
+                          '${NumberFormat('#,###').format(item.totalPrice)}원',
+                          style: TossDesignSystem.body2.copyWith(color: TossDesignSystem.primary, fontWeight: FontWeight.w500),
+                        ),
+                      ],
                     ),
                   ),
                 ),
-                const Spacer(),
-                Text(
-                  '${order.totalAmount.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}원',
-                  style: Get.textTheme.titleSmall?.copyWith(
-                    color: Get.theme.colorScheme.primary,
-                    fontWeight: FontWeight.bold,
-                  ),
+                const SizedBox(height: TossDesignSystem.spacing12),
+                // 구분선
+                const Divider(color: TossDesignSystem.gray200),
+                const SizedBox(height: TossDesignSystem.spacing8),
+                // 총 금액
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      '총 금액',
+                      style: TossDesignSystem.body1.copyWith(fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      '${NumberFormat('#,###').format(order.totalAmount)}원',
+                      style: TossDesignSystem.heading4.copyWith(color: TossDesignSystem.primary),
+                    ),
+                  ],
                 ),
               ],
             ),
           ],
         ),
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(AppConstants.defaultPadding),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '주문 상품',
-                  style: Get.textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: AppConstants.smallPadding),
-                ...order.items
-                    .map(
-                      (item) => Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 4),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                '${item.productName} (${item.unit})',
-                                style: Get.textTheme.bodyMedium,
-                              ),
-                            ),
-                            Text(
-                              '${item.quantity}개',
-                              style: Get.textTheme.bodyMedium?.copyWith(
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            Text(
-                              '${item.totalPrice.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}원',
-                              style: Get.textTheme.bodyMedium?.copyWith(
-                                color: Get.theme.colorScheme.primary,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    )
-                    .toList(),
-                if (order.notes != null && order.notes!.isNotEmpty) ...[
-                  const SizedBox(height: AppConstants.defaultPadding),
-                  Text(
-                    '메모',
-                    style: Get.textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: AppConstants.smallPadding),
-                  Text(
-                    order.notes!,
-                    style: Get.textTheme.bodyMedium?.copyWith(
-                      color: Get.theme.colorScheme.onSurface.withOpacity(0.7),
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }

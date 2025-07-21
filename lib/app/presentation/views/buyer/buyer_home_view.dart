@@ -2,10 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:order_market_app/app/presentation/controllers/buyer/order_history_controller.dart';
-import '../../../core/constants/app_constants.dart';
-import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_theme.dart';
-import '../../../core/utils/order_utils.dart';
+import '../../../core/theme/toss_design_system.dart';
 import '../../../data/models/order_model.dart';
 import '../../../data/models/user_model.dart'; // UserState 사용을 위해 추가
 import '../../../core/services/auth_service.dart'; // AuthService 사용을 위해 추가
@@ -33,19 +30,20 @@ class BuyerHomeView extends GetView<BuyerHomeController> {
 
     return RefreshIndicator(
       onRefresh: controller.refreshData,
+      color: TossDesignSystem.primary,
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(AppConstants.defaultPadding),
+        padding: const EdgeInsets.all(TossDesignSystem.spacing20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // 환영 섹션
             _buildWelcomeSection(context),
-            const SizedBox(height: AppConstants.largePadding * 2),
+            const SizedBox(height: TossDesignSystem.spacing32),
 
             // 연결된 판매자 섹션 (연결 탭의 UI/UX 재사용)
             _buildConnectedSellersSection(context),
-            const SizedBox(height: AppConstants.defaultPadding),
+            const SizedBox(height: TossDesignSystem.spacing24),
 
             // 최근 주문 섹션 (내역 탭의 UI/UX 재사용)
             _buildRecentOrdersSection(context),
@@ -81,15 +79,15 @@ class BuyerHomeView extends GetView<BuyerHomeController> {
             if (businessName != null && businessName.isNotEmpty) ...[
               Text(
                 businessName,
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                style: TossDesignSystem.heading4.copyWith(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: TossDesignSystem.spacing4),
               Text(
                 userName,
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                style: TossDesignSystem.body1.copyWith(
                   color: Colors.white.withOpacity(0.9),
                   fontWeight: FontWeight.w500,
                 ),
@@ -97,16 +95,16 @@ class BuyerHomeView extends GetView<BuyerHomeController> {
             ] else ...[
               Text(
                 userName,
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                style: TossDesignSystem.heading4.copyWith(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
                 ),
               ),
             ],
-            const SizedBox(height: 8),
+            const SizedBox(height: TossDesignSystem.spacing8),
             Text(
               welcomeMessage,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              style: TossDesignSystem.body2.copyWith(
                 color: Colors.white.withOpacity(0.8),
               ),
             ),
@@ -121,19 +119,19 @@ class BuyerHomeView extends GetView<BuyerHomeController> {
           children: [
             Text(
               '오류 발생',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+              style: TossDesignSystem.heading4.copyWith(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: TossDesignSystem.spacing8),
             Text(
               welcomeMessage,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              style: TossDesignSystem.body2.copyWith(
                 color: Colors.white.withOpacity(0.8),
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: TossDesignSystem.spacing8),
             ElevatedButton(
               onPressed: () {
                 // 재시도 로직 (AuthService에서 다시 로드 시도)
@@ -141,9 +139,11 @@ class BuyerHomeView extends GetView<BuyerHomeController> {
                   authService.loadUserData(authService.firebaseUser!.uid);
                 }
               },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: AppColors.primary,
+              style: TossDesignSystem.primaryButton.copyWith(
+                backgroundColor: MaterialStateProperty.all(Colors.white),
+                foregroundColor: MaterialStateProperty.all(
+                  TossDesignSystem.primary,
+                ),
               ),
               child: const Text('재시도'),
             ),
@@ -157,15 +157,15 @@ class BuyerHomeView extends GetView<BuyerHomeController> {
           children: [
             Text(
               userName,
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+              style: TossDesignSystem.heading4.copyWith(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: TossDesignSystem.spacing8),
             Text(
               welcomeMessage,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              style: TossDesignSystem.body2.copyWith(
                 color: Colors.white.withOpacity(0.8),
               ),
             ),
@@ -175,17 +175,17 @@ class BuyerHomeView extends GetView<BuyerHomeController> {
 
       return Container(
         width: double.infinity,
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(TossDesignSystem.spacing24),
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [AppColors.primary, AppColors.primaryDark],
+            colors: [TossDesignSystem.primary, TossDesignSystem.primaryDark],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(TossDesignSystem.radius20),
           boxShadow: [
             BoxShadow(
-              color: AppColors.primary.withOpacity(0.3),
+              color: TossDesignSystem.primary.withOpacity(0.3),
               offset: const Offset(0, 8),
               blurRadius: 24,
               spreadRadius: 0,
@@ -195,10 +195,10 @@ class BuyerHomeView extends GetView<BuyerHomeController> {
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(TossDesignSystem.spacing12),
               decoration: BoxDecoration(
                 color: Colors.white.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(TossDesignSystem.radius12),
               ),
               child: const Icon(
                 Icons.shopping_bag_rounded,
@@ -206,7 +206,7 @@ class BuyerHomeView extends GetView<BuyerHomeController> {
                 size: 24,
               ),
             ),
-            const SizedBox(width: AppTheme.medium),
+            const SizedBox(width: TossDesignSystem.spacing16),
             Expanded(child: content),
           ],
         ),
@@ -219,38 +219,22 @@ class BuyerHomeView extends GetView<BuyerHomeController> {
     // SellerConnectController 사용하여 기존 로직 재사용
     final connectController = Get.find<SellerConnectController>();
 
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            offset: const Offset(0, 2),
-            blurRadius: 8,
-            spreadRadius: 0,
-          ),
-        ],
-      ),
+    return TossWidgets.card(
+      padding: EdgeInsets.zero,
       child: Column(
         children: [
           // 내부 헤더 (내역 탭과 동일한 스타일)
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(TossDesignSystem.spacing16),
             child: Row(
               children: [
-                Icon(
+                const Icon(
                   Icons.people,
-                  color: Theme.of(context).primaryColor,
+                  color: TossDesignSystem.primary,
                   size: 20,
                 ),
-                const SizedBox(width: 8),
-                Text(
-                  '연결된 판매자',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                const SizedBox(width: TossDesignSystem.spacing8),
+                Text('연결된 판매자', style: TossDesignSystem.heading4),
                 const Spacer(),
                 TextButton(
                   onPressed: () {
@@ -259,9 +243,8 @@ class BuyerHomeView extends GetView<BuyerHomeController> {
                   },
                   child: Text(
                     '더보기',
-                    style: TextStyle(
-                      color: Theme.of(context).primaryColor,
-                      fontSize: 14,
+                    style: TossDesignSystem.body2.copyWith(
+                      color: TossDesignSystem.textSecondary,
                     ),
                   ),
                 ),
@@ -273,8 +256,12 @@ class BuyerHomeView extends GetView<BuyerHomeController> {
           Obx(() {
             if (connectController.isLoadingConnections.value) {
               return const Padding(
-                padding: EdgeInsets.all(24),
-                child: Center(child: CircularProgressIndicator()),
+                padding: EdgeInsets.all(TossDesignSystem.spacing24),
+                child: Center(
+                  child: CircularProgressIndicator(
+                    color: TossDesignSystem.primary,
+                  ),
+                ),
               );
             }
 
@@ -287,12 +274,18 @@ class BuyerHomeView extends GetView<BuyerHomeController> {
                 connectController.connectedSellers.take(3).toList();
 
             return Padding(
-              padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
+              padding: const EdgeInsets.only(
+                left: TossDesignSystem.spacing16,
+                right: TossDesignSystem.spacing16,
+                bottom: TossDesignSystem.spacing16,
+              ),
               child: ListView.separated(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 itemCount: displaySellers.length,
-                separatorBuilder: (context, index) => const SizedBox(height: 8),
+                separatorBuilder:
+                    (context, index) =>
+                        const SizedBox(height: TossDesignSystem.spacing8),
                 itemBuilder: (context, index) {
                   final connection = displaySellers[index];
                   return _buildSellerCard(context, connection);
@@ -308,35 +301,32 @@ class BuyerHomeView extends GetView<BuyerHomeController> {
   /// 빈 연결 상태 - 개선된 버전
   Widget _buildEmptyConnectedSellersState(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(TossDesignSystem.spacing24),
       child: Column(
         children: [
-          Icon(Icons.store_outlined, size: 48, color: Colors.grey[400]),
-          const SizedBox(height: 12),
+          Icon(Icons.store_outlined, size: 48, color: TossDesignSystem.gray400),
+          const SizedBox(height: TossDesignSystem.spacing12),
           Text(
             '연결된 판매자가 없습니다',
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-              color: Colors.grey[600],
-              fontWeight: FontWeight.w500,
+            style: TossDesignSystem.body1.copyWith(
+              color: TossDesignSystem.textSecondary,
             ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: TossDesignSystem.spacing8),
           Text(
             '연결 탭에서 판매자와 연결해보세요',
             textAlign: TextAlign.center,
-            style: Theme.of(
-              context,
-            ).textTheme.bodySmall?.copyWith(color: Colors.grey[500]),
+            style: TossDesignSystem.body2.copyWith(
+              color: TossDesignSystem.textTertiary,
+            ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: TossDesignSystem.spacing16),
           ElevatedButton(
             onPressed: () {
               final mainController = Get.find<MainController>();
               mainController.changeTab(3); // 연결 탭으로 이동
             },
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-            ),
+            style: TossDesignSystem.primaryButton,
             child: const Text('판매자 연결하기'),
           ),
         ],
@@ -348,88 +338,54 @@ class BuyerHomeView extends GetView<BuyerHomeController> {
   Widget _buildSellerCard(BuildContext context, dynamic connection) {
     final connectController = Get.find<SellerConnectController>();
 
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.grey[50],
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[200]!),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            // 판매자명, 판매자, 연결됨을 가로로 나란히 배치 (아이콘 없이)
-            Expanded(
-              child: Row(
-                children: [
-                  // 판매자명
-                  Text(
-                    connection.sellerName ?? '판매자',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 15,
-                    ),
+    return TossWidgets.surfaceCard(
+      padding: const EdgeInsets.all(TossDesignSystem.spacing16),
+      child: Row(
+        children: [
+          // 판매자명, 판매자, 연결됨을 가로로 나란히 배치 (아이콘 없이)
+          Expanded(
+            child: Row(
+              children: [
+                // 판매자명
+                Text(
+                  connection.sellerName ?? '판매자',
+                  style: TossDesignSystem.body1.copyWith(
+                    fontWeight: FontWeight.w600,
                   ),
-                  const SizedBox(width: 8),
-                  // 판매자 텍스트 (아이콘 삭제)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 6,
-                      vertical: 2,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Theme.of(
-                        context,
-                      ).primaryColor.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      '판매자',
-                      style: TextStyle(
-                        color: Theme.of(context).primaryColor,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  // 연결됨 텍스트 (아이콘 삭제)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 6,
-                      vertical: 2,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.green.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      '연결됨',
-                      style: TextStyle(
-                        color: Colors.green[700],
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // 오른쪽: 주문하기 버튼
-            ElevatedButton(
-              onPressed: () => connectController.goToOrder(connection),
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
                 ),
-                minimumSize: const Size(60, 32),
-              ),
-              child: const Text('주문하기', style: TextStyle(fontSize: 12)),
+                const SizedBox(width: TossDesignSystem.spacing8),
+                // 판매자 텍스트 (아이콘 삭제)
+                TossWidgets.badge(
+                  text: '판매자',
+                  backgroundColor: TossDesignSystem.primary.withOpacity(0.1),
+                  textColor: TossDesignSystem.primary,
+                ),
+                const SizedBox(width: TossDesignSystem.spacing8),
+                // 연결됨 텍스트 (아이콘 삭제)
+                TossWidgets.badge(
+                  text: '연결됨',
+                  backgroundColor: TossDesignSystem.success.withOpacity(0.1),
+                  textColor: TossDesignSystem.success,
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+
+          // 오른쪽: 주문하기 버튼
+          ElevatedButton(
+            onPressed: () => connectController.goToOrder(connection),
+            style: TossDesignSystem.primaryButton.copyWith(
+              padding: MaterialStateProperty.all(
+                const EdgeInsets.symmetric(
+                  horizontal: TossDesignSystem.spacing12,
+                  vertical: TossDesignSystem.spacing8,
+                ),
+              ),
+              minimumSize: MaterialStateProperty.all(const Size(60, 32)),
+            ),
+            child: const Text('주문하기', style: TextStyle(fontSize: 12)),
+          ),
+        ],
       ),
     );
   }
@@ -439,38 +395,22 @@ class BuyerHomeView extends GetView<BuyerHomeController> {
     // OrderHistoryController 사용하여 기존 로직 재사용
     final historyController = Get.find<OrderHistoryController>();
 
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            offset: const Offset(0, 2),
-            blurRadius: 8,
-            spreadRadius: 0,
-          ),
-        ],
-      ),
+    return TossWidgets.card(
+      padding: EdgeInsets.zero,
       child: Column(
         children: [
           // 내부 헤더 (연결된 판매자와 동일한 스타일)
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(TossDesignSystem.spacing16),
             child: Row(
               children: [
-                Icon(
+                const Icon(
                   Icons.receipt_long,
-                  color: Theme.of(context).primaryColor,
+                  color: TossDesignSystem.primary,
                   size: 20,
                 ),
-                const SizedBox(width: 8),
-                Text(
-                  '최근 주문',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                const SizedBox(width: TossDesignSystem.spacing8),
+                Text('최근 주문', style: TossDesignSystem.heading4),
                 const Spacer(),
                 TextButton(
                   onPressed: () {
@@ -479,9 +419,8 @@ class BuyerHomeView extends GetView<BuyerHomeController> {
                   },
                   child: Text(
                     '더보기',
-                    style: TextStyle(
-                      color: Theme.of(context).primaryColor,
-                      fontSize: 14,
+                    style: TossDesignSystem.body2.copyWith(
+                      color: TossDesignSystem.textSecondary,
                     ),
                   ),
                 ),
@@ -493,8 +432,12 @@ class BuyerHomeView extends GetView<BuyerHomeController> {
           Obx(() {
             if (historyController.isLoading.value) {
               return const Padding(
-                padding: EdgeInsets.all(24),
-                child: Center(child: CircularProgressIndicator()),
+                padding: EdgeInsets.all(TossDesignSystem.spacing24),
+                child: Center(
+                  child: CircularProgressIndicator(
+                    color: TossDesignSystem.primary,
+                  ),
+                ),
               );
             }
 
@@ -506,12 +449,18 @@ class BuyerHomeView extends GetView<BuyerHomeController> {
             final recentOrders = historyController.orders.take(3).toList();
 
             return Padding(
-              padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
+              padding: const EdgeInsets.only(
+                left: TossDesignSystem.spacing16,
+                right: TossDesignSystem.spacing16,
+                bottom: TossDesignSystem.spacing16,
+              ),
               child: ListView.separated(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 itemCount: recentOrders.length,
-                separatorBuilder: (context, index) => const SizedBox(height: 8),
+                separatorBuilder:
+                    (context, index) =>
+                        const SizedBox(height: TossDesignSystem.spacing8),
                 itemBuilder: (context, index) {
                   final order = recentOrders[index];
                   return _buildOrderItem(context, order);
@@ -527,34 +476,35 @@ class BuyerHomeView extends GetView<BuyerHomeController> {
   /// 빈 주문 상태 - 개선된 버전
   Widget _buildEmptyOrdersState(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(TossDesignSystem.spacing24),
       child: Column(
         children: [
-          Icon(Icons.receipt_long_outlined, size: 48, color: Colors.grey[400]),
-          const SizedBox(height: 12),
+          Icon(
+            Icons.receipt_long_outlined,
+            size: 48,
+            color: TossDesignSystem.gray400,
+          ),
+          const SizedBox(height: TossDesignSystem.spacing12),
           Text(
             '주문 내역이 없습니다',
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-              color: Colors.grey[600],
-              fontWeight: FontWeight.w500,
+            style: TossDesignSystem.body1.copyWith(
+              color: TossDesignSystem.textSecondary,
             ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: TossDesignSystem.spacing8),
           Text(
             '첫 주문을 시작해보세요!',
-            style: Theme.of(
-              context,
-            ).textTheme.bodySmall?.copyWith(color: Colors.grey[500]),
+            style: TossDesignSystem.body2.copyWith(
+              color: TossDesignSystem.textTertiary,
+            ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: TossDesignSystem.spacing16),
           ElevatedButton(
             onPressed: () {
               final mainController = Get.find<MainController>();
               mainController.changeTab(1); // 주문 탭으로 이동
             },
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-            ),
+            style: TossDesignSystem.primaryButton,
             child: const Text('주문하러 가기'),
           ),
         ],
@@ -570,15 +520,13 @@ class BuyerHomeView extends GetView<BuyerHomeController> {
         final mainController = Get.find<MainController>();
         mainController.changeTab(2); // 내역 탭으로 이동
       },
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.grey[50],
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey[200]!),
-        ),
+      child: TossWidgets.surfaceCard(
+        padding: const EdgeInsets.all(TossDesignSystem.spacing16),
         child: ExpansionTile(
-          tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          childrenPadding: const EdgeInsets.all(16),
+          tilePadding: EdgeInsets.zero,
+          childrenPadding: const EdgeInsets.only(
+            top: TossDesignSystem.spacing16,
+          ),
           // leading 제거 (왼쪽 세로 아이콘 삭제)
           title: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -589,70 +537,41 @@ class BuyerHomeView extends GetView<BuyerHomeController> {
                   // 판매자명
                   Text(
                     order.sellerBusinessName ?? order.sellerName,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 15,
+                    style: TossDesignSystem.body1.copyWith(
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: TossDesignSystem.spacing8),
                   // 판매자 텍스트 (아이콘 삭제)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 6,
-                      vertical: 2,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Theme.of(
-                        context,
-                      ).primaryColor.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      '판매자',
-                      style: TextStyle(
-                        color: Theme.of(context).primaryColor,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
+                  TossWidgets.badge(
+                    text: '판매자',
+                    backgroundColor: TossDesignSystem.primary.withOpacity(0.1),
+                    textColor: TossDesignSystem.primary,
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: TossDesignSystem.spacing8),
                   // 주문 상태 텍스트 (아이콘 삭제)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 6,
-                      vertical: 2,
-                    ),
-                    decoration: BoxDecoration(
-                      color: order.status.color.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      order.status.displayText,
-                      style: TextStyle(
-                        color: order.status.color,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
+                  TossWidgets.statusBadge(
+                    text: order.status.displayText,
+                    color: order.status.color,
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: TossDesignSystem.spacing8),
               // 두 번째 줄: 주문 날짜와 총 금액
               Row(
                 children: [
                   Text(
                     DateFormat('yyyy-MM-dd HH:mm').format(order.orderDate),
-                    style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                    style: TossDesignSystem.caption.copyWith(
+                      color: TossDesignSystem.textSecondary,
+                    ),
                   ),
                   const Spacer(),
                   Text(
-                    '${order.totalAmount.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}원',
-                    style: TextStyle(
-                      color: Theme.of(context).primaryColor,
-                      fontSize: 14,
+                    '${NumberFormat('#,###').format(order.totalAmount)}원',
+                    style: TossDesignSystem.body1.copyWith(
                       fontWeight: FontWeight.bold,
+                      color: TossDesignSystem.textPrimary,
                     ),
                   ),
                 ],
@@ -666,36 +585,36 @@ class BuyerHomeView extends GetView<BuyerHomeController> {
               children: [
                 Text(
                   '주문 상품',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+                  style: TossDesignSystem.body1.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: TossDesignSystem.spacing8),
                 // 주문 상품 목록
                 ...order.items.map(
                   (item) => Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 3),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: TossDesignSystem.spacing4,
+                    ),
                     child: Row(
                       children: [
                         Expanded(
                           child: Text(
                             '${item.productName} (${item.unit})',
-                            style: const TextStyle(fontSize: 14),
+                            style: TossDesignSystem.body2,
                           ),
                         ),
                         Text(
                           '${item.quantity}개',
-                          style: const TextStyle(
-                            fontSize: 14,
+                          style: TossDesignSystem.body2.copyWith(
                             fontWeight: FontWeight.w500,
                           ),
                         ),
-                        const SizedBox(width: 16),
+                        const SizedBox(width: TossDesignSystem.spacing16),
                         Text(
-                          '${item.totalPrice.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}원',
-                          style: TextStyle(
-                            color: Theme.of(context).primaryColor,
-                            fontSize: 14,
+                          '${NumberFormat('#,###').format(item.totalPrice)}원',
+                          style: TossDesignSystem.body2.copyWith(
+                            color: TossDesignSystem.textPrimary,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -703,26 +622,24 @@ class BuyerHomeView extends GetView<BuyerHomeController> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: TossDesignSystem.spacing12),
                 // 구분선
-                const Divider(),
-                const SizedBox(height: 8),
+                const Divider(color: TossDesignSystem.gray200),
+                const SizedBox(height: TossDesignSystem.spacing8),
                 // 총 금액
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
                       '총 금액',
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      style: TossDesignSystem.body1.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     Text(
-                      '${order.totalAmount.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}원',
-                      style: TextStyle(
-                        color: Theme.of(context).primaryColor,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                      '${NumberFormat('#,###').format(order.totalAmount)}원',
+                      style: TossDesignSystem.heading4.copyWith(
+                        color: TossDesignSystem.textPrimary,
                       ),
                     ),
                   ],

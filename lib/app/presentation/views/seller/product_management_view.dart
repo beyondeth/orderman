@@ -156,7 +156,7 @@ class ProductManagementView extends GetView<ProductManagementController> {
                     Text(
                       product.name,
                       style: TossDesignSystem.body1.copyWith(
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                     const SizedBox(height: TossDesignSystem.spacing4),
@@ -185,7 +185,7 @@ class ProductManagementView extends GetView<ProductManagementController> {
                   Text(
                     '${_formatPrice(product.price)}원',
                     style: TossDesignSystem.body1.copyWith(
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w500,
                       color: TossDesignSystem.textPrimary,
                     ),
                   ),
@@ -212,7 +212,11 @@ class ProductManagementView extends GetView<ProductManagementController> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.edit_outlined, size: 16),
+                      const Icon(
+                        Icons.edit_outlined,
+                        size: 16,
+                        color: TossDesignSystem.textSecondary,
+                      ),
                       const SizedBox(width: TossDesignSystem.spacing4),
                       Text(
                         '수정',
@@ -236,7 +240,7 @@ class ProductManagementView extends GetView<ProductManagementController> {
                     backgroundColor:
                         product.isActive
                             ? TossDesignSystem.gray100
-                            : TossDesignSystem.success,
+                            : TossDesignSystem.gray100,
                     foregroundColor:
                         product.isActive
                             ? TossDesignSystem.textPrimary
@@ -260,6 +264,7 @@ class ProductManagementView extends GetView<ProductManagementController> {
                             ? Icons.pause_circle_outline
                             : Icons.play_circle_outline,
                         size: 16,
+                        color: TossDesignSystem.textSecondary,
                       ),
                       const SizedBox(width: TossDesignSystem.spacing4),
                       Text(

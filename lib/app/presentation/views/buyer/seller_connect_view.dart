@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../../core/constants/app_constants.dart';
+import '../../../core/theme/toss_design_system.dart';
 import '../../controllers/buyer/seller_connect_controller.dart';
 
 class SellerConnectView extends GetView<SellerConnectController> {
@@ -10,22 +10,20 @@ class SellerConnectView extends GetView<SellerConnectController> {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(AppConstants.defaultPadding),
+      padding: const EdgeInsets.all(TossDesignSystem.spacing20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           // 제목 추가
           Text(
             '판매자 연결',
-            style: Theme.of(
-              context,
-            ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+            style: TossDesignSystem.heading3,
           ),
-          const SizedBox(height: AppConstants.defaultPadding),
+          const SizedBox(height: TossDesignSystem.spacing20),
           // 연결 요청 섹션
           _buildConnectionRequestSection(context),
 
-          const SizedBox(height: AppConstants.largePadding * 2),
+          const SizedBox(height: TossDesignSystem.spacing32),
 
           // 연결된 판매자 목록
           _buildConnectedSellersSection(context),
@@ -35,86 +33,69 @@ class SellerConnectView extends GetView<SellerConnectController> {
   }
 
   Widget _buildConnectionRequestSection(BuildContext context) {
-    return Card(
-      elevation: 2,
-      child: Padding(
-        padding: const EdgeInsets.all(AppConstants.defaultPadding),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.link, color: Theme.of(context).primaryColor),
-                const SizedBox(width: 8),
-                Text(
-                  '새 판매자 연결',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
+    return TossWidgets.card(
+      padding: const EdgeInsets.all(TossDesignSystem.spacing20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.link, color: TossDesignSystem.primary),
+              const SizedBox(width: TossDesignSystem.spacing8),
+              Text(
+                '새 판매자 연결',
+                style: TossDesignSystem.heading4,
+              ),
+            ],
+          ),
+
+          const SizedBox(height: TossDesignSystem.spacing16),
+
+          Text(
+            '연결하고 싶은 판매자의 이메일을 입력해주세요.',
+            style: TossDesignSystem.body2.copyWith(color: TossDesignSystem.textSecondary),
+          ),
+
+          const SizedBox(height: TossDesignSystem.spacing16),
+
+          // 이메일 입력 필드
+          TextField(
+            controller: controller.emailController,
+            keyboardType: TextInputType.emailAddress,
+            decoration: TossDesignSystem.inputDecoration(
+              labelText: '판매자 이메일',
+              hintText: 'seller@example.com',
+              prefixIcon: const Icon(Icons.email, color: TossDesignSystem.textSecondary),
             ),
+          ),
 
-            const SizedBox(height: AppConstants.defaultPadding),
+          const SizedBox(height: TossDesignSystem.spacing16),
 
-            Text(
-              '연결하고 싶은 판매자의 이메일을 입력해주세요.',
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
-            ),
-
-            const SizedBox(height: AppConstants.defaultPadding),
-
-            // 이메일 입력 필드
-            TextField(
-              controller: controller.emailController,
-              keyboardType: TextInputType.emailAddress,
-              decoration: InputDecoration(
-                labelText: '판매자 이메일',
-                hintText: 'seller@example.com',
-                prefixIcon: const Icon(Icons.email),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
+          // 연결 요청 버튼
+          Obx(
+            () => SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed:
+                    controller.isLoading.value
+                        ? null
+                        : controller.sendConnectionRequest,
+                icon:
+                    controller.isLoading.value
+                        ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                        )
+                        : const Icon(Icons.send),
+                label: Text(
+                  controller.isLoading.value ? '전송 중...' : '연결 요청 보내기',
                 ),
-                filled: true,
-                fillColor: Colors.grey[50],
+                style: TossDesignSystem.primaryButton,
               ),
             ),
-
-            const SizedBox(height: AppConstants.defaultPadding),
-
-            // 연결 요청 버튼
-            Obx(
-              () => SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed:
-                      controller.isLoading.value
-                          ? null
-                          : controller.sendConnectionRequest,
-                  icon:
-                      controller.isLoading.value
-                          ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                          : const Icon(Icons.send),
-                  label: Text(
-                    controller.isLoading.value ? '전송 중...' : '연결 요청 보내기',
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -125,22 +106,20 @@ class SellerConnectView extends GetView<SellerConnectController> {
       children: [
         Row(
           children: [
-            Icon(Icons.people, color: Theme.of(context).primaryColor),
-            const SizedBox(width: 8),
+            const Icon(Icons.people, color: TossDesignSystem.primary),
+            const SizedBox(width: TossDesignSystem.spacing8),
             Text(
               '연결된 판매자',
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+              style: TossDesignSystem.heading4,
             ),
           ],
         ),
 
-        const SizedBox(height: AppConstants.defaultPadding),
+        const SizedBox(height: TossDesignSystem.spacing16),
 
         Obx(() {
           if (controller.isLoadingConnections.value) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator(color: TossDesignSystem.primary));
           }
 
           if (controller.connectedSellers.isEmpty) {
@@ -151,7 +130,7 @@ class SellerConnectView extends GetView<SellerConnectController> {
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: controller.connectedSellers.length,
-            separatorBuilder: (context, index) => const SizedBox(height: 12),
+            separatorBuilder: (context, index) => const SizedBox(height: TossDesignSystem.spacing12),
             itemBuilder: (context, index) {
               final connection = controller.connectedSellers[index];
               return _buildSellerCard(context, connection);
@@ -163,71 +142,51 @@ class SellerConnectView extends GetView<SellerConnectController> {
   }
 
   Widget _buildEmptyState(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(AppConstants.largePadding),
-        child: Column(
-          children: [
-            Icon(Icons.store_outlined, size: 64, color: Colors.grey[400]),
-            const SizedBox(height: 16),
-            Text(
-              '연결된 판매자가 없습니다',
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(color: Colors.grey[600]),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              '위에서 판매자 이메일을 입력하여\n연결 요청을 보내보세요.',
-              textAlign: TextAlign.center,
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(color: Colors.grey[500]),
-            ),
-          ],
-        ),
+    return TossWidgets.card(
+      padding: const EdgeInsets.all(TossDesignSystem.spacing24),
+      child: Column(
+        children: [
+          Icon(Icons.store_outlined, size: 64, color: TossDesignSystem.gray400),
+          const SizedBox(height: TossDesignSystem.spacing16),
+          Text(
+            '연결된 판매자가 없습니다',
+            style: TossDesignSystem.heading4.copyWith(color: TossDesignSystem.textSecondary),
+          ),
+          const SizedBox(height: TossDesignSystem.spacing8),
+          Text(
+            '위에서 판매자 이메일을 입력하여\n연결 요청을 보내보세요.',
+            textAlign: TextAlign.center,
+            style: TossDesignSystem.body2.copyWith(color: TossDesignSystem.textTertiary),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildSellerCard(BuildContext context, connection) {
-    return Card(
-      elevation: 1,
+    return TossWidgets.card(
+      padding: const EdgeInsets.all(TossDesignSystem.spacing16),
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
-          child: Icon(Icons.store, color: Theme.of(context).primaryColor),
+          backgroundColor: TossDesignSystem.primary.withOpacity(0.1),
+          child: const Icon(Icons.store, color: TossDesignSystem.primary),
         ),
         title: Text(
           connection.sellerName,
-          style: const TextStyle(fontWeight: FontWeight.bold),
+          style: TossDesignSystem.body1.copyWith(fontWeight: FontWeight.w600),
         ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(connection.sellerEmail ?? ''),
-            const SizedBox(height: 4),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-              decoration: BoxDecoration(
-                color: Colors.green.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(
-                '연결됨',
-                style: TextStyle(
-                  color: Colors.green[700],
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
+            Text(connection.sellerEmail ?? '', style: TossDesignSystem.caption),
+            const SizedBox(height: TossDesignSystem.spacing4),
+            TossWidgets.badge(text: '연결됨', backgroundColor: TossDesignSystem.success.withOpacity(0.1), textColor: TossDesignSystem.success),
           ],
         ),
         trailing: ElevatedButton(
           onPressed: () => controller.goToOrder(connection),
-          style: ElevatedButton.styleFrom(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          style: TossDesignSystem.primaryButton.copyWith(
+            padding: MaterialStateProperty.all(const EdgeInsets.symmetric(horizontal: TossDesignSystem.spacing12, vertical: TossDesignSystem.spacing8)),
           ),
           child: const Text('주문하기'),
         ),

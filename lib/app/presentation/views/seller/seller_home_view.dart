@@ -460,7 +460,7 @@ class SellerHomeView extends GetView<SellerHomeController> {
                     Text(
                       order.buyerBusinessName ?? order.buyerName,
                       style: TossDesignSystem.body1.copyWith(
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                     const SizedBox(height: TossDesignSystem.spacing4),
@@ -484,7 +484,7 @@ class SellerHomeView extends GetView<SellerHomeController> {
                   Text(
                     '${controller.formatAmount(order.totalAmount)}원',
                     style: TossDesignSystem.body1.copyWith(
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w500,
                       color: TossDesignSystem.textPrimary,
                     ),
                   ),
